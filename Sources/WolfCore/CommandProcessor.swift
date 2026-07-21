@@ -26,14 +26,28 @@ public enum CommandProcessor {
         let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd HH:mm"; return f.string(from: d)
     }
 
-    public static func handle(_ req: CommandRequest, store: Store, now: Date) -> CommandResult {
+    public static func handle(_ req: CommandRequest, store: Store, now: Date,
+                              resolver: DomainResolver = SystemDomainResolver()) -> CommandResult {
         do {
             var state = try store.load()
             switch req.cmd {
 
             case "add":
+                let force = req.args.contains("--force")
+                let sites = req.args.filter { !$0.hasPrefix("--") }
                 var added: [String] = [], lines: [String] = []
-                for s in req.args {
+                for s in sites {
+                    // Typo guard: refuse a genuinely nonexistent domain before it
+                    // clutters the list. Only for new, valid, unprotected domains —
+                    // already-blocked ones now sinkhole to 0.0.0.0, and protected/
+                    // invalid ones are reported by `state.add` below. `--force` skips it.
+                    if !force, let d = Domain.canonical(s),
+                       !state.blocked.contains(d),
+                       !Allowlist.isProtected(d, extra: state.config.protectedDomains),
+                       resolver.check(d) == .notFound {
+                        lines.append("refused — \(d) doesn't resolve (typo?). To block it anyway: wolf add \(d) --force")
+                        continue
+                    }
                     switch state.add(s) {
                     case .added(let d):           added.append(d)
                     case .alreadyBlocked(let d):  lines.append("already blocked: \(d)")

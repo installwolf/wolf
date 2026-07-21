@@ -255,7 +255,8 @@ func usage() {
 
     Everyday (no sudo — handled by the wolfd daemon):
       wolf status                 show blocked sites and any pending removals
-      wolf add <site>...          block site(s) immediately
+      wolf add <site>...          block site(s) immediately (unresolvable domains
+                                  are refused as typos; add --force to override)
       wolf remove <site>          queue removal after the cooldown
       wolf remove <site> --now    remove now (needs partner passphrase)
       wolf cancel <site>          cancel a pending removal (re-commit)
