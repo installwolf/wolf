@@ -1,0 +1,60 @@
+name: WolfFilter
+options:
+  bundleIdPrefix: com.installwolf
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+
+packages:
+  WolfCore:
+    path: ..            # the WolfCore SwiftPM library at the repo root
+
+settings:
+  base:
+    # ⚠️  Set this to your Apple Developer Team ID (Xcode ▸ Settings ▸ Accounts,
+    #     or `security find-identity -v -p codesigning`). Everything else is wired.
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  # The container app: activates the system extension + configures the filter.
+  WolfFilterHost:
+    type: application
+    platform: macOS
+    sources:
+      - path: WolfFilterHost
+      - path: Shared
+    dependencies:
+      - package: WolfCore
+        product: WolfCore
+      - target: WolfFilter
+        embed: true      # bundle the sysext into Contents/Library/SystemExtensions
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.installwolf
+        PRODUCT_NAME: "Wolf Filter"
+        INFOPLIST_FILE: WolfFilterHost/Info.plist
+        CODE_SIGN_ENTITLEMENTS: WolfFilterHost/WolfFilterHost.entitlements
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: YES
+
+  # The content-filter system extension.
+  WolfFilter:
+    type: system-extension
+    platform: macOS
+    sources:
+      - path: WolfFilter
+      - path: Shared
+    dependencies:
+      - package: WolfCore
+        product: WolfCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.installwolf.filter
+        PRODUCT_NAME: WolfFilter
+        INFOPLIST_FILE: WolfFilter/Info.plist
+        CODE_SIGN_ENTITLEMENTS: WolfFilter/WolfFilter.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
