@@ -11,6 +11,9 @@ public enum Paths {
     public static var home: String { env("WOLF_HOME", "/Library/Application Support/Wolf") }
     public static var stateFile: String { home + "/state.json" }
     public static var clockFloorFile: String { home + "/clock_floor" }
+    /// Unix-domain socket the root daemon listens on so the unprivileged CLI can
+    /// issue commands without sudo (the daemon still enforces the removal gate).
+    public static var socket: String { home + "/wolfd.sock" }
 
     /// System files we manage.
     public static var hosts: String { env("WOLF_HOSTS", "/etc/hosts") }

@@ -1,8 +1,11 @@
 import Foundation
 import WolfCore
 
-// wolf — the control CLI. Adding is instant; removing is gated by a
-// cooldown or the accountability-partner passphrase. Mutating commands need root.
+// wolf — the control CLI. Everyday commands (add/remove/cancel/enable) go to the
+// root daemon over a local socket, so they need no sudo; the daemon enforces the
+// removal gate. Sensitive setup and `panic` stay root-gated (deliberate friction).
+
+signal(SIGPIPE, SIG_IGN)
 
 nonisolated(unsafe) let store = Store()
 let args = Array(CommandLine.arguments.dropFirst())
@@ -13,8 +16,7 @@ func fail(_ msg: String) -> Never {
 }
 
 func requireRoot() {
-    // Root is required only to protect the real system files. When paths are
-    // redirected to a sandbox (WOLF_HOSTS set), there's nothing to protect.
+    // Root protects the real system files; a sandbox (WOLF_HOSTS set) has nothing to protect.
     if ProcessInfo.processInfo.environment["WOLF_HOSTS"] != nil { return }
     guard geteuid() == 0 else {
         fail("this command changes protected system state — re-run with: sudo wolf \(args.joined(separator: " "))")
@@ -54,16 +56,32 @@ func humanDuration(_ seconds: TimeInterval) -> String {
     return "\(h)h"
 }
 
+/// Send a mutating command to the daemon (no sudo). Fall back to a direct,
+/// privileged call only if we're already root/sandbox; otherwise explain.
+func dispatch(_ req: CommandRequest) -> Never {
+    if let res = SocketIPC.clientSend(req) {
+        res.lines.forEach { print($0) }
+        exit(res.ok ? 0 : 1)
+    }
+    let sandbox = ProcessInfo.processInfo.environment["WOLF_HOSTS"] != nil
+    if geteuid() == 0 || sandbox {
+        let res = CommandProcessor.handle(req, store: store, now: Date())
+        res.lines.forEach { print($0) }
+        exit(res.ok ? 0 : 1)
+    }
+    fail("can't reach the Wolf daemon (is wolfd running?). Fallback: sudo wolf \(args.joined(separator: " "))")
+}
+
 // MARK: - Commands
 
 func cmdStatus() {
     let s = loadState()
     if !s.enabled {
-        print("Wolf — ⏸ DISABLED (kill switch). \(s.blocked.count) site(s) saved but not enforced. `sudo wolf enable` to resume.")
+        print("Wolf — ⏸ DISABLED (kill switch). \(s.blocked.count) site(s) saved but not enforced. `wolf enable` to resume.")
     }
     print("Wolf — \(s.blocked.count) site(s) blocked, cooldown \(humanDuration(s.config.cooldownSeconds)), partner passphrase \(s.config.passphrase == nil ? "NOT set" : "set"), \(s.config.protectedDomains.count) custom-protected.")
     if s.blocked.isEmpty {
-        print("  (nothing blocked yet — `sudo wolf add <site>`)")
+        print("  (nothing blocked yet — `wolf add <site>`)")
     } else {
         for d in s.blocked.sorted() {
             let pending = s.pendingRemovals.first { $0.domain == d }
@@ -78,24 +96,32 @@ func cmdStatus() {
     if !orphans.isEmpty { print("  (\(orphans.count) stale pending removal(s))") }
 }
 
+// --- everyday commands: via daemon, no sudo ---
+
 func cmdAdd(_ sites: [String]) {
-    requireRoot()
-    guard !sites.isEmpty else { fail("usage: sudo wolf add <site> [site...]") }
-    var s = loadState()
-    var added: [String] = []
-    for site in sites {
-        switch s.add(site) {
-        case .added(let d):           added.append(d)
-        case .alreadyBlocked(let d):  print("already blocked: \(d)")
-        case .invalid(let raw):       print("skipped invalid: \(raw)")
-        case .protectedDomain(let d): print("refused — \(d) is protected and can never be blocked (safety allowlist)")
-        }
-    }
-    guard !added.isEmpty else { print("nothing added."); return }
-    persistAndEnforce(s)
-    Audit.record("add: \(added.joined(separator: ", "))")
-    print("blocked (effective immediately): \(added.joined(separator: ", "))")
+    guard !sites.isEmpty else { fail("usage: wolf add <site> [site...]") }
+    dispatch(CommandRequest(cmd: "add", args: sites))
 }
+
+func cmdRemove(_ argv: [String]) {
+    let instant = argv.contains("--now")
+    let positional = argv.filter { !$0.hasPrefix("--") }
+    guard let site = positional.first else { fail("usage: wolf remove <site> [--now]") }
+    var req = CommandRequest(cmd: "remove", args: instant ? [site, "--now"] : [site])
+    if instant { req.passphrase = promptSecret("Partner passphrase: ") }
+    dispatch(req)
+}
+
+func cmdCancel(_ sites: [String]) {
+    guard let site = sites.first else { fail("usage: wolf cancel <site>") }
+    dispatch(CommandRequest(cmd: "cancel", args: [site]))
+}
+
+func cmdEnable() {
+    dispatch(CommandRequest(cmd: "enable", args: []))
+}
+
+// --- setup / sensitive commands: root-gated (deliberate friction) ---
 
 func cmdProtect(_ sites: [String]) {
     requireRoot()
@@ -139,30 +165,24 @@ func cmdDisable() {
     guard s.disable(passphrase: pass) else { fail("passphrase incorrect — still enabled.") }
     persistAndEnforce(s)
     Audit.record("disable (clean, passphrase)")
-    print("Wolf disabled. Blocklist kept. Re-enable with: sudo wolf enable")
-}
-
-func cmdEnable() {
-    requireRoot()
-    var s = loadState()
-    s.enable()
-    persistAndEnforce(s)
-    Audit.record("enable")
-    print("Wolf re-enabled — \(s.blocked.count) site(s) enforced.")
+    print("Wolf disabled. Blocklist kept. Re-enable with: wolf enable")
 }
 
 func cmdPanic(_ argv: [String]) {
     requireRoot()
     let preconfirmed = argv.contains("--confirm") || argv.contains("--yes")
-    if preconfirmed {
+    func teardown(_ tag: String) {
         let s = (try? store.load()) ?? WolfState()
-        Audit.record("PANIC scorched-earth (--confirm) — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")")
+        Audit.record("PANIC scorched-earth\(tag) — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")")
         try? Enforcer.clearAll()
         Shell.run("/bin/launchctl", ["bootout", "system", Paths.daemonPlist])
         Enforcer.setImmutable(false, path: Paths.stateFile)
         Enforcer.setImmutable(false, path: Paths.clockFloorFile)
         try? FileManager.default.removeItem(atPath: Paths.stateFile)
         try? FileManager.default.removeItem(atPath: Paths.clockFloorFile)
+    }
+    if preconfirmed {
+        teardown(" (--confirm)")
         print("Wolf fully disabled and wiped.")
         return
     }
@@ -179,60 +199,9 @@ func cmdPanic(_ argv: [String]) {
     guard promptLine("\nType  DESTROY WOLF  to proceed: ") == "DESTROY WOLF" else {
         fail("aborted — nothing changed.")
     }
-    let s = (try? store.load()) ?? WolfState()
-    Audit.record("PANIC scorched-earth — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")")
-    try? Enforcer.clearAll()
-    Shell.run("/bin/launchctl", ["bootout", "system", Paths.daemonPlist])
-    Enforcer.setImmutable(false, path: Paths.stateFile)
-    Enforcer.setImmutable(false, path: Paths.clockFloorFile)
-    try? FileManager.default.removeItem(atPath: Paths.stateFile)
-    try? FileManager.default.removeItem(atPath: Paths.clockFloorFile)
+    teardown("")
     print("\nWolf is fully disabled and its config wiped. Your Mac is unrestricted.")
     print("To start over later: sudo ./install/install.sh")
-}
-
-func cmdRemove(_ argv: [String]) {
-    requireRoot()
-    let instant = argv.contains("--now")
-    let positional = argv.filter { !$0.hasPrefix("--") }
-    guard let site = positional.first else { fail("usage: sudo wolf remove <site> [--now]") }
-    var s = loadState()
-
-    if instant {
-        guard s.config.passphrase != nil else {
-            fail("no partner passphrase is set, so instant removal is disabled. Use `sudo wolf remove \(site)` to queue it (cooldown \(humanDuration(s.config.cooldownSeconds))).")
-        }
-        let pass = promptSecret("Partner passphrase: ")
-        if s.removeWithPassphrase(site, passphrase: pass) {
-            persistAndEnforce(s)
-            Audit.record("remove --now (passphrase): \(site)")
-            print("removed immediately: \(site)")
-        } else {
-            fail("passphrase incorrect — nothing changed.")
-        }
-        return
-    }
-
-    guard let req = s.requestRemoval(site, now: Date()) else {
-        fail("\(site) is not currently blocked (or already queued).")
-    }
-    persistAndEnforce(s)
-    Audit.record("remove queued: \(req.domain) → \(fmt(req.unlockAt))")
-    print("removal queued. \(req.domain) stays blocked until \(fmt(req.unlockAt)).")
-    print("changed your mind? re-committing keeps you safe: `sudo wolf add \(req.domain)`")
-}
-
-func cmdCancel(_ sites: [String]) {
-    requireRoot()
-    guard let site = sites.first, let d = Domain.canonical(site) else {
-        fail("usage: sudo wolf cancel <site>")
-    }
-    var s = loadState()
-    let before = s.pendingRemovals.count
-    s.pendingRemovals.removeAll { $0.domain == d }
-    guard s.pendingRemovals.count < before else { fail("no pending removal for \(d).") }
-    persistAndEnforce(s)
-    print("cancelled pending removal — \(d) stays blocked.")
 }
 
 func cmdSetPassphrase() {
@@ -260,7 +229,6 @@ func cmdSetCooldown(_ argv: [String]) {
     var s = loadState()
     let new = hours * 3600
     if new < s.config.cooldownSeconds {
-        // Shortening the cooldown weakens protection → gate behind the passphrase.
         guard let pp = s.config.passphrase else {
             fail("shortening the cooldown requires a partner passphrase (none set). You may only increase it.")
         }
@@ -285,27 +253,21 @@ func usage() {
     print("""
     wolf — self-binding website blocker
 
-    Read-only:
+    Everyday (no sudo — handled by the wolfd daemon):
       wolf status                 show blocked sites and any pending removals
+      wolf add <site>...          block site(s) immediately
+      wolf remove <site>          queue removal after the cooldown
+      wolf remove <site> --now    remove now (needs partner passphrase)
+      wolf cancel <site>          cancel a pending removal (re-commit)
+      wolf enable                 resume enforcement after a disable
 
-    Adds are instant. Removes are gated. (need sudo)
-      sudo wolf add <site>...     block site(s) immediately
-      sudo wolf remove <site>     queue removal after the cooldown
-      sudo wolf remove <site> --now   remove now (needs partner passphrase)
-      sudo wolf cancel <site>     cancel a pending removal (re-commit)
-
-    Safety allowlist (need sudo)
-      sudo wolf protect <domain>...  never allow this domain to be blocked
-      sudo wolf unprotect <domain>   remove a custom protection
-
-    Kill switch (need sudo)
-      sudo wolf disable           clean shutdown (needs partner passphrase)
-      sudo wolf enable            resume enforcement
-      sudo wolf panic             BREAK-GLASS: wipe everything, always works
-
-    Setup (need sudo)
+    Setup & safety (need sudo — deliberate friction):
       sudo wolf set-passphrase    set/change the partner passphrase
       sudo wolf set-cooldown <h>  increase freely; shortening needs passphrase
+      sudo wolf protect <domain>...   never allow this domain to be blocked
+      sudo wolf unprotect <domain>    remove a custom protection
+      sudo wolf disable           clean shutdown (needs partner passphrase)
+      sudo wolf panic             BREAK-GLASS: wipe everything, always works
       sudo wolf enforce           force re-apply enforcement now
     """)
 }
@@ -317,12 +279,12 @@ case "status", nil:      cmdStatus()
 case "add":              cmdAdd(Array(args.dropFirst()))
 case "remove", "rm":     cmdRemove(Array(args.dropFirst()))
 case "cancel":           cmdCancel(Array(args.dropFirst()))
+case "enable":           cmdEnable()
 case "set-passphrase":   cmdSetPassphrase()
 case "set-cooldown":     cmdSetCooldown(Array(args.dropFirst()))
 case "protect":          cmdProtect(Array(args.dropFirst()))
 case "unprotect":        cmdUnprotect(Array(args.dropFirst()))
 case "disable":          cmdDisable()
-case "enable":           cmdEnable()
 case "panic":            cmdPanic(Array(args.dropFirst()))
 case "enforce":          cmdEnforce()
 case "help", "-h", "--help": usage()

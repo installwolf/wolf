@@ -37,10 +37,18 @@ levers do the heavy lifting:
 - **`WolfCore`** — pure, unit-tested logic: domain canonicalization, the
   add/remove/cooldown/passphrase state machine, hosts/pf rendering, PBKDF2
   passphrase hashing. No side effects, so policy is fully testable.
-- **`wolf`** — the control CLI. Enforces the removal gate in code before
-  persisting. Mutations need root (to write protected files).
-- **`wolfd`** — the root LaunchDaemon. Self-heals enforcement and drains due
-  removals. `KeepAlive` makes it relaunch if killed.
+- **`wolf`** — the control CLI. Everyday commands (add/remove/cancel/enable) are
+  sent to `wolfd` over a local Unix socket, so they need **no sudo**; if the
+  daemon is unreachable it falls back to a direct privileged call. Setup and
+  `panic` stay root-gated on purpose (deliberate friction).
+- **`wolfd`** — the root LaunchDaemon. Self-heals enforcement, drains due
+  removals, and serves the CLI socket. `KeepAlive` relaunches it if killed.
+- **`CommandProcessor`** — the shared mutation + gate logic, called by both the
+  daemon (over the socket) and the CLI's root fallback. **Root was never the
+  security; the gate is.** So dropping sudo for everyday commands changes nothing
+  about what's allowed: the daemon still enforces the cooldown/passphrase for
+  every caller. The socket is world-connectable (`0666`); `panic` is deliberately
+  *not* exposed over it, so its root requirement stays as friction.
 
 ### The removal gate (the whole point)
 

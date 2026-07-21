@@ -59,16 +59,25 @@ wolf status
 
 ## Usage
 
+Everyday commands need **no sudo** — the CLI hands them to the root `wolfd`
+daemon over a local socket, which enforces the gate:
+
 ```
 wolf status                     show blocked sites and pending removals
-sudo wolf add <site>...         block site(s) immediately
-sudo wolf remove <site>         queue removal — stays blocked for the cooldown
-sudo wolf remove <site> --now   remove now (requires partner passphrase)
-sudo wolf cancel <site>         change of heart: cancel a pending removal
-sudo wolf protect <domain>...   never allow this domain to be blocked
-sudo wolf unprotect <domain>    remove a custom protection
+wolf add <site>...              block site(s) immediately
+wolf remove <site>              queue removal — stays blocked for the cooldown
+wolf remove <site> --now        remove now (requires partner passphrase)
+wolf cancel <site>              change of heart: cancel a pending removal
+wolf enable                     resume enforcement after a disable
+```
+
+Setup and safety commands stay **sudo-gated** on purpose (deliberate friction):
+
+```
 sudo wolf set-passphrase        set/change the partner passphrase
 sudo wolf set-cooldown <hours>  raise freely; lowering needs the passphrase
+sudo wolf protect <domain>...   never allow this domain to be blocked
+sudo wolf unprotect <domain>    remove a custom protection
 sudo wolf enforce               force re-apply enforcement now
 ```
 
@@ -78,7 +87,7 @@ You can never brick yourself, but the escape hatch has a real cost:
 
 ```
 sudo wolf disable   # clean shutdown — needs the partner passphrase, keeps your blocklist
-sudo wolf enable    # resume
+wolf enable         # resume (no sudo)
 sudo wolf panic     # BREAK-GLASS: always works with no passphrase, but WIPES
                        # your whole setup and writes a permanent audit-log entry
 ```
