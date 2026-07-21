@@ -14,8 +14,11 @@ PF_CONF="/etc/pf.conf"
 PF_ANCHOR="/etc/pf.anchors/wolf"
 
 echo "==> Building release binaries"
-# Build as the invoking user so SwiftPM caches land in their home, not root's.
-sudo -u "${SUDO_USER:-root}" bash -lc "cd '$REPO' && swift build -c release"
+BUILD_USER="${SUDO_USER:-root}"
+# Heal any root-owned artifacts from an earlier run so the user build can write
+# (EPERM otherwise). Then build as the invoking user, HOME set for SwiftPM caches.
+[ -d "$REPO/.build" ] && chown -R "$BUILD_USER" "$REPO/.build" 2>/dev/null || true
+sudo -u "$BUILD_USER" -H bash -lc "cd '$REPO' && swift build -c release"
 BIN="$REPO/.build/release"
 
 echo "==> Installing binaries"

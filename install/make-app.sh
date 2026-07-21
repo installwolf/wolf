@@ -8,7 +8,15 @@ DEST="${1:-/Applications}"
 APP="$DEST/Wolf.app"
 
 echo "==> Building release"
-(cd "$REPO" && swift build -c release)
+# Always build as the invoking (non-root) user so .build never gets root-owned
+# artifacts that break the next build. -H points SwiftPM caches at their home.
+BUILD_USER="${SUDO_USER:-$(id -un)}"
+if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+    chown -R "$BUILD_USER" "$REPO/.build" 2>/dev/null || true
+    sudo -u "$BUILD_USER" -H bash -lc "cd '$REPO' && swift build -c release"
+else
+    (cd "$REPO" && swift build -c release)
+fi
 
 echo "==> Assembling $APP"
 rm -rf "$APP"
