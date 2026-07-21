@@ -4,3 +4,5 @@
 DerivedData/
 .DS_Store
 NetworkExtension/WolfFilter.xcodeproj/
+.vercel
+site/.vercel

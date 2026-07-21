@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wolf — the porn blocker you can't sweet-talk</title>
+  <meta name="description" content="A macOS blocker built to survive your own worst moment. Adding a site is instant. Getting past it takes a 48-hour cooldown, or a password only your accountability partner holds." />
+  <meta property="og:title" content="Wolf — the porn blocker you can't sweet-talk" />
+  <meta property="og:description" content="Easy in, hard out. A Mac blocker built for the 1 a.m. version of you." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header id="hdr">
+    <div class="wrap nav">
+      <a class="brand" href="#top" aria-label="Wolf home">W<span class="eye" aria-hidden="true"></span>LF</a>
+      <nav class="nav-links">
+        <a class="txt" href="#how">How it holds</a>
+        <a class="txt" href="#honesty">The honest part</a>
+        <a class="txt" href="#pricing">Pricing</a>
+        <a class="btn btn-primary" href="#pricing">Get Wolf</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- HERO -->
+    <section class="hero">
+      <canvas id="nocturne" aria-hidden="true"></canvas>
+      <div class="wrap">
+        <p class="kicker reveal">macOS &middot; unbypassable by design</p>
+        <h1 class="reveal">The porn blocker you <span class="amber">can't sweet-talk.</span></h1>
+        <p class="sub reveal">Every other blocker has an off switch you'll find at 1 a.m. Wolf doesn't. Blocking a site takes one second. Getting past it takes a 48-hour cooldown, or a password only your accountability partner holds.</p>
+        <div class="cta-row reveal">
+          <a class="btn btn-primary btn-lg" href="#pricing">Get Wolf, $29/yr</a>
+          <a class="btn btn-ghost btn-lg" href="#how">See how it holds</a>
+        </div>
+
+        <div class="terminal reveal" role="img" aria-label="Terminal showing the wolf command blocking a site and refusing to remove it without a passphrase">
+          <div class="bar"><i></i><i></i><i></i><span>zsh</span></div>
+          <pre><span class="p">$</span> <span class="c">wolf add pornhub.com</span>
+<span class="ok">blocked (effective immediately): pornhub.com</span>
+
+<span class="p">$</span> <span class="c">wolf remove pornhub.com</span>
+<span class="o">removal queued. pornhub.com stays blocked until Jul 23, 21:14.</span>
+
+<span class="p">$</span> <span class="c">wolf remove pornhub.com --now</span>
+<span class="x">error: instant removal needs your partner's passphrase.</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEM -->
+    <section class="band problem" id="why">
+      <div class="wrap reveal">
+        <div class="eyebrow-row"><span class="kicker">Why the others fail</span></div>
+        <p class="big">You don't relapse because the blocker is weak. You relapse because it lets <em>you</em> turn it off, and at 1 a.m. you will always find a reason.</p>
+        <p class="lede" style="margin-top:2rem">Password you set? You know it. Timer you chose? You can end it. Uninstall? Two clicks. Soft blockers are built to be undone, so they always are. Wolf flips the physics: trivial to commit, genuinely hard to walk back.</p>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section class="band band-alt" id="how">
+      <div class="wrap">
+        <div class="reveal">
+          <div class="eyebrow-row"><span class="kicker">How it holds</span></div>
+          <h2 class="section-title">Easy in. Hard out. Self-healing in between.</h2>
+        </div>
+
+        <div class="rows">
+
+          <div class="row reveal">
+            <div>
+              <span class="idx">01 / asymmetry</span>
+              <h3>Blocking is instant. Unblocking is a decision you can't rush.</h3>
+              <p>Add a site and it's dead in one second. Change your mind and removal sits behind a 48-hour cooldown, so the craving passes long before the timer does. Need it gone now? That takes a passphrase your accountability partner sets and you never see.</p>
+            </div>
+            <div class="demo">
+              <ul class="chip-list">
+                <li><span class="mk">add</span><span><b>Instant.</b> No friction on doing the right thing.</span></li>
+                <li><span class="mk">remove</span><span><b>48-hour cooldown.</b> The urge expires first.</span></li>
+                <li><span class="mk">--now</span><span><b>Partner passphrase.</b> A second person, not a second thought.</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="row reveal">
+            <div>
+              <span class="idx">02 / the watchdog</span>
+              <h3>Tamper with it and it puts itself back within seconds.</h3>
+              <p>A root-level guardian re-applies the block on a loop and marks its own files immutable. Edit the hosts file, kill the process, delete the app: it heals and restarts. There's no quiet way to switch it off in a weak moment.</p>
+            </div>
+            <div class="demo">
+              <div class="stack">
+                <div class="layer"><b>hosts sinkhole</b><small>every app</small></div>
+                <div class="layer"><b>pf firewall anchor</b><small>DNS routes</small></div>
+                <div class="layer"><b>immutable flags</b><small>self-heal</small></div>
+                <div class="layer"><b>root watchdog</b><small>always on</small></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row reveal">
+            <div>
+              <span class="idx">03 / the deep filter</span>
+              <h3>It holds through your VPN, DoH, and Private Relay.</h3>
+              <p>An on-device content filter reads each connection's real destination before it leaves your Mac, so encrypted DNS, iCloud Private Relay, and a full-tunnel VPN can't route around it. This is the layer the cheap blockers don't have.</p>
+            </div>
+            <div class="demo">
+              <ul class="chip-list">
+                <li><span class="mk">✓</span><span>Works with <b>ExpressVPN and any VPN</b> running.</span></li>
+                <li><span class="mk">✓</span><span>Immune to <b>DNS-over-HTTPS</b> in Chrome and Firefox.</span></li>
+                <li><span class="mk">✓</span><span>Immune to <b>iCloud Private Relay</b>.</span></li>
+                <li><span class="mk">✓</span><span>Covers <b>every app</b>, not just one browser.</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="row reveal">
+            <div>
+              <span class="idx">04 / the escape hatch</span>
+              <h3>You're never truly trapped. But bailing costs you.</h3>
+              <p>A break-glass command always works, so a malfunction can never brick your Mac. It's deliberately scorched-earth: it wipes your whole setup and writes a permanent, tamper-proof record. You can leave. You just can't leave quietly.</p>
+            </div>
+            <div class="demo">
+              <ul class="chip-list">
+                <li><span class="mk">panic</span><span><b>Always works.</b> Safety before everything.</span></li>
+                <li><span class="mk">wipes</span><span>The whole config, so it's never a shortcut.</span></li>
+                <li><span class="mk">logs</span><span>A record your partner can see. No secret exits.</span></li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- HONESTY -->
+    <section class="band" id="honesty">
+      <div class="wrap reveal">
+        <div class="honesty">
+          <div class="eyebrow-row"><span class="kicker" style="color:var(--danger)">Read this before you buy</span></div>
+          <h2>We won't tell you it's impossible to beat.</h2>
+          <p style="color:var(--ash); margin-top:1rem; max-width:60ch;">Every tool that swears it's "100% unbypassable" is lying to you, and you already know it. On a Mac where you have the admin password, a determined person can eventually get around anything. Here's the real deal.</p>
+          <div class="two">
+            <div class="no">
+              <h4>What Wolf can't do</h4>
+              <ul>
+                <li>Stop someone who wipes the Mac or boots into Recovery.</li>
+                <li>Block a different device: your phone, a work laptop.</li>
+                <li>Read your mind. It blocks sites you name, not everything.</li>
+              </ul>
+            </div>
+            <div class="yes">
+              <h4>What Wolf actually does</h4>
+              <ul>
+                <li>Makes bypass slow, effortful, and visible, so the impulse loses.</li>
+                <li>Removes the easy off switch every other blocker leaves you.</li>
+                <li>Puts a real person, not just software, between you and relapse.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="band band-alt" id="pricing">
+      <div class="wrap">
+        <div class="reveal">
+          <div class="eyebrow-row"><span class="kicker">Pricing</span></div>
+          <h2 class="section-title">One year of not fighting it alone.</h2>
+          <p class="lede">Less than a month of most subscriptions. Cancel anytime; the block keeps its word until you do.</p>
+        </div>
+
+        <div class="prices">
+          <div class="plan reveal">
+            <span class="tag">Lone Wolf</span>
+            <h3>For your Mac</h3>
+            <p class="who">One person, one machine, full teeth.</p>
+            <div class="price"><span class="amt">$29</span><span class="per">/ year</span></div>
+            <ul>
+              <li>Every layer: <b>watchdog, deep filter, the works</b></li>
+              <li><b>48-hour</b> removal cooldown</li>
+              <li>Accountability-partner passphrase</li>
+              <li>All updates for a year</li>
+            </ul>
+            <!-- TODO: replace with your Stripe Payment Link for the $29/yr plan -->
+            <a class="btn btn-ghost" href="https://buy.stripe.com/REPLACE_LONE_WOLF">Get Lone Wolf</a>
+            <p class="foot">One Mac &middot; billed yearly</p>
+          </div>
+
+          <div class="plan feature reveal">
+            <span class="tag">The Pack &middot; best value</span>
+            <h3>For the whole den</h3>
+            <p class="who">Up to 5 Macs. Cover the family, or be someone's partner.</p>
+            <div class="price"><span class="amt">$99</span><span class="per">/ year</span></div>
+            <ul>
+              <li>Everything in Lone Wolf, <b>times five Macs</b></li>
+              <li>Be the <b>accountability partner</b> for the people you love</li>
+              <li>One passphrase holder protects the whole pack</li>
+              <li>All updates for a year</li>
+            </ul>
+            <!-- TODO: replace with your Stripe Payment Link for the $99/yr plan -->
+            <a class="btn btn-primary" href="https://buy.stripe.com/REPLACE_THE_PACK">Get The Pack</a>
+            <p class="foot">Up to 5 Macs &middot; billed yearly</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="band" id="faq">
+      <div class="wrap reveal">
+        <div class="eyebrow-row"><span class="kicker">Straight answers</span></div>
+        <h2 class="section-title">The questions you're actually asking.</h2>
+        <div class="faq-list">
+          <details class="faq">
+            <summary>Can't I just bypass it if I really want to?</summary>
+            <div class="ans"><p>Eventually, if you're determined enough, yes, and we say so plainly above. The point isn't a perfect cage. It's to make bypass so slow and so visible that the craving passes before you can pull it off. That gap is where recovery happens.</p></div>
+          </details>
+          <details class="faq">
+            <summary>Does it really work with my VPN on?</summary>
+            <div class="ans"><p>Yes. The on-device filter reads each connection's true destination before it ever reaches the tunnel, so ExpressVPN or any other VPN, DNS-over-HTTPS, and iCloud Private Relay can't route around it. We built this layer specifically because it's how people slip past weaker blockers.</p></div>
+          </details>
+          <details class="faq">
+            <summary>Is my browsing tracked or sent anywhere?</summary>
+            <div class="ans"><p>No. Everything runs on your Mac. Wolf checks connections against your own blocklist locally and phones nothing home. Your accountability partner sees only the events you'd expect (a removal request, a break-glass), never your history.</p></div>
+          </details>
+          <details class="faq">
+            <summary>What if I lose the partner passphrase?</summary>
+            <div class="ans"><p>You wait out the 48-hour cooldown, which removes any site without a passphrase, or you use the break-glass command. Break-glass always works so you can never be locked out of your own machine. It just wipes the setup and leaves a record, so it's a real exit, not a loophole.</p></div>
+          </details>
+          <details class="faq">
+            <summary>Do I need to be technical to use it?</summary>
+            <div class="ans"><p>You install it once and manage sites from a small menu-bar app or a one-line command. Setting the partner passphrase is the one step best done by the other person. If you can install a Mac app, you can run Wolf.</p></div>
+          </details>
+          <details class="faq">
+            <summary>Can I get a refund?</summary>
+            <div class="ans"><p>If Wolf doesn't hold up its end within 30 days, email us and we'll refund you. We'd rather lose the sale than pretend it fit when it didn't.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="band final">
+      <div class="wrap reveal">
+        <div class="eyebrow-row"><span class="kicker">Bind yourself before you need to</span></div>
+        <h2>The best time to set the trap is when you're strong.</h2>
+        <p class="sub">Not at 1 a.m. Right now, while the decision is easy and the resolve is real.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary btn-lg" href="#pricing">Get Wolf, $29/yr</a>
+          <a class="btn btn-ghost btn-lg" href="#how">How it holds</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="wrap row2">
+      <a class="brand" href="#top">W<span class="eye" aria-hidden="true"></span>LF</a>
+      <small>installwolf.com &middot; a commitment device for macOS</small>
+      <small>&copy; 2026 Wolf. Built for the version of you who means it.</small>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
