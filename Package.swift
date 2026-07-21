@@ -20,6 +20,12 @@ let package = Package(
             dependencies: ["BulwarkCore"]
         ),
 
+        // Menu-bar app: a friendly front end over the CLI (SwiftUI MenuBarExtra).
+        .executableTarget(
+            name: "BulwarkBar",
+            dependencies: ["BulwarkCore"]
+        ),
+
         .testTarget(
             name: "BulwarkCoreTests",
             dependencies: ["BulwarkCore"]

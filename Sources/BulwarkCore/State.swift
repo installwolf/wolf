@@ -7,11 +7,19 @@ public enum BulwarkError: Error, Equatable {
 }
 
 /// Abstracts "now" so cooldown logic is testable and so we can later harden
-/// against clock-rollback attacks (the daemon can persist a monotonic marker).
+/// against clock-rollback attacks (the daemon persists a monotonic marker).
 public protocol TimeSource { var now: Date { get } }
 public struct SystemTime: TimeSource {
     public init() {}
     public var now: Date { Date() }
+}
+
+/// Outcome of an `add`, so callers can explain refusals (invalid / protected).
+public enum AddResult: Equatable {
+    case added(String)
+    case alreadyBlocked(String)
+    case invalid(String)
+    case protectedDomain(String)
 }
 
 /// A queued request to unblock a domain. It stays blocked until `unlockAt`.
@@ -26,10 +34,23 @@ public struct BulwarkConfig: Codable, Equatable {
     public var cooldownSeconds: TimeInterval
     /// Optional accountability-partner passphrase for instant override.
     public var passphrase: PassphraseHash?
+    /// User-added domains that may never be blocked (bank, work, …).
+    public var protectedDomains: Set<String>
 
-    public init(cooldownSeconds: TimeInterval = 48 * 3600, passphrase: PassphraseHash? = nil) {
+    public init(cooldownSeconds: TimeInterval = 48 * 3600,
+                passphrase: PassphraseHash? = nil,
+                protectedDomains: Set<String> = []) {
         self.cooldownSeconds = cooldownSeconds
         self.passphrase = passphrase
+        self.protectedDomains = protectedDomains
+    }
+
+    // Tolerate older state files that predate `protectedDomains`.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        cooldownSeconds = try c.decode(TimeInterval.self, forKey: .cooldownSeconds)
+        passphrase = try c.decodeIfPresent(PassphraseHash.self, forKey: .passphrase)
+        protectedDomains = try c.decodeIfPresent(Set<String>.self, forKey: .protectedDomains) ?? []
     }
 }
 
@@ -39,23 +60,38 @@ public struct BulwarkState: Codable, Equatable {
     public var blocked: Set<String>
     public var pendingRemovals: [RemovalRequest]
     public var config: BulwarkConfig
+    /// When false, the daemon clears all enforcement. Flipped by disable/enable.
+    public var enabled: Bool
 
     public init(blocked: Set<String> = [],
                 pendingRemovals: [RemovalRequest] = [],
-                config: BulwarkConfig = BulwarkConfig()) {
+                config: BulwarkConfig = BulwarkConfig(),
+                enabled: Bool = true) {
         self.blocked = blocked
         self.pendingRemovals = pendingRemovals
         self.config = config
+        self.enabled = enabled
+    }
+
+    // Tolerate older state files that predate `enabled`.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        blocked = try c.decode(Set<String>.self, forKey: .blocked)
+        pendingRemovals = try c.decode([RemovalRequest].self, forKey: .pendingRemovals)
+        config = try c.decode(BulwarkConfig.self, forKey: .config)
+        enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
     }
 
     /// Add is always instant and cancels any pending removal (a change of heart
-    /// while committing should re-commit, never accidentally unblock).
+    /// while committing should re-commit, never accidentally unblock). Refuses
+    /// protected domains so you can't lock yourself out of a working Mac.
     @discardableResult
-    public mutating func add(_ raw: String) -> String? {
-        guard let d = Domain.canonical(raw) else { return nil }
-        blocked.insert(d)
+    public mutating func add(_ raw: String) -> AddResult {
+        guard let d = Domain.canonical(raw) else { return .invalid(raw) }
+        if Allowlist.isProtected(d, extra: config.protectedDomains) { return .protectedDomain(d) }
+        let isNew = blocked.insert(d).inserted
         pendingRemovals.removeAll { $0.domain == d }
-        return d
+        return isNew ? .added(d) : .alreadyBlocked(d)
     }
 
     /// Queue a removal. It stays blocked until the cooldown elapses. Idempotent:
@@ -90,4 +126,18 @@ public struct BulwarkState: Codable, Equatable {
         pendingRemovals.removeAll { $0.unlockAt <= now }
         return due.sorted()
     }
+
+    // MARK: kill switch
+
+    /// Clean, gated shutdown: requires the partner passphrase. Keeps config so
+    /// the user can `enable` again later.
+    @discardableResult
+    public mutating func disable(passphrase: String) -> Bool {
+        guard let stored = config.passphrase,
+              Passphrase.verify(passphrase, against: stored) else { return false }
+        enabled = false
+        return true
+    }
+
+    public mutating func enable() { enabled = true }
 }

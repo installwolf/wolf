@@ -8,13 +8,26 @@ import Foundation
 /// on a loop so any tampering is reverted within seconds.
 public enum Enforcer {
 
-    /// Render state onto every enforcement layer and re-harden.
+    /// Render state onto every enforcement layer and re-harden. When the state
+    /// is disabled (kill switch), clear every layer instead.
     public static func apply(_ state: BulwarkState) throws {
+        guard state.enabled else { try clearAll(); return }
         let domains = state.blocked.sorted()
         try writeHosts(domains)
         try writePfAnchor()
         reloadPf()
         hardenAll()
+    }
+
+    /// Remove all enforcement: empty the hosts block, flush the pf anchor, and
+    /// drop immutable flags. Used by `disable` and `panic`.
+    public static func clearAll() throws {
+        unhardenAll()
+        try writeHosts([])
+        Shell.run("/sbin/pfctl", ["-a", "bulwark", "-F", "all"])
+        setImmutable(false, path: Paths.pfAnchor)
+        try? "# managed by bulwark (disabled)\n".write(toFile: Paths.pfAnchor, atomically: true, encoding: .utf8)
+        flushDNSCache()
     }
 
     // MARK: /etc/hosts

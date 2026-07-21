@@ -38,6 +38,9 @@ if ! grep -q 'anchor "bulwark"' "$PF_CONF" 2>/dev/null; then
     } >> "$PF_CONF"
 fi
 
+echo "==> Installing the menu-bar app"
+"$REPO/install/make-app.sh" /Applications >/dev/null
+
 echo "==> Installing and starting the watchdog daemon"
 install -m 644 "$REPO/install/com.bulwark.daemon.plist" "$PLIST"
 launchctl bootout system "$PLIST" 2>/dev/null || true
@@ -52,5 +55,6 @@ echo "  1. Have your accountability partner set the passphrase (you should NOT w
 echo "       sudo bulwark set-passphrase"
 echo "  2. Block sites:"
 echo "       sudo bulwark add pornhub.com xvideos.com"
-echo "  3. Check status any time:"
+echo "  3. Check status any time (or use the menu-bar app):"
 echo "       bulwark status"
+echo "       open /Applications/Bulwark.app"

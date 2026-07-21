@@ -53,6 +53,26 @@ levers do the heavy lifting:
 | raise the cooldown | free |
 | lower the cooldown | requires the partner passphrase |
 | set/change passphrase | changing requires the current one |
+| `disable` (clean kill) | requires the partner passphrase; keeps blocklist |
+| `panic` (break-glass) | always works, no passphrase — but scorched-earth + audit-logged |
+
+### Safety allowlist (anti-footgun)
+
+`add` refuses any domain that is, or is a subdomain of, a protected entry:
+built-in Apple/OS endpoints (`apple.com`, `icloud.com`, `cdn-apple.com`, …) plus
+any the user marks with `protect` (bank, work). This closes the most likely
+self-harm — accidentally sinkholing iCloud/Software Update/your bank and being
+stuck behind the cooldown. Built-in protections can't be removed.
+
+### Kill switch philosophy
+
+A frictionless "off" button is just relapse-on-demand, so there isn't one. But a
+malfunctioning blocker must never trap you, so `panic` **always** works without a
+passphrase — its deterrent is *cost + visibility*, not a lock: it wipes the
+entire setup (you rebuild from scratch) and appends a permanent record to the
+append-only audit log *before* wiping, so the panic itself is logged and (per the
+accountability roadmap) will notify your partner. You're never trapped; you also
+can't quietly bail.
 
 The passphrase is stored only as a salted PBKDF2-HMAC-SHA256 hash — the partner
 who sets it holds a secret the user never learns.
@@ -108,8 +128,8 @@ Ordered by impact, informed by how the strongest tools in the space work:
 5. **Content-aware detection** — the domain-list arms race never ends; pixel/AI
    detection (à la Canopy/Covenant Eyes) catches social feeds, image boards, and
    AI-chatbot output. Heavy; later.
-6. **Menu-bar app** — a friendly front end over the CLI for adding sites and
-   showing status.
+6. ~~**Menu-bar app**~~ ✅ done — SwiftUI `MenuBarExtra` front end (`BulwarkBar`
+   target) over the CLI; mutations go through the macOS admin-auth prompt.
 
 ## Prior art studied
 

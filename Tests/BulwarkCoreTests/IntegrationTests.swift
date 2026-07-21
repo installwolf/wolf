@@ -24,7 +24,7 @@ final class IntegrationTests: XCTestCase {
     func testStorePersistsAndHostsSinkholesWhilePreservingUserLines() throws {
         let store = Store()
         var s = try store.load()
-        XCTAssertEqual(s.add("evil.com"), "evil.com")
+        XCTAssertEqual(s.add("evil.com"), .added("evil.com"))
         try store.save(s)
         try Enforcer.writeHosts(s.blocked.sorted())
 

@@ -81,11 +81,37 @@ final class StateTests: XCTestCase {
 
     func testAddIsInstantAndCanonicalizes() {
         var s = makeState()
-        XCTAssertEqual(s.add("https://www.PornHub.com/foo"), "pornhub.com")
+        XCTAssertEqual(s.add("https://www.PornHub.com/foo"), .added("pornhub.com"))
         XCTAssertTrue(s.blocked.contains("pornhub.com"))
         // adding again is idempotent
-        XCTAssertEqual(s.add("pornhub.com"), "pornhub.com")
+        XCTAssertEqual(s.add("pornhub.com"), .alreadyBlocked("pornhub.com"))
         XCTAssertEqual(s.blocked.count, 1)
+        XCTAssertEqual(s.add("not a domain"), .invalid("not a domain"))
+    }
+
+    func testRefusesToBlockProtectedDomains() {
+        var s = makeState()
+        // built-in critical protections
+        XCTAssertEqual(s.add("icloud.com"), .protectedDomain("icloud.com"))
+        XCTAssertEqual(s.add("gsa.apple.com"), .protectedDomain("gsa.apple.com")) // subdomain
+        XCTAssertFalse(s.blocked.contains("icloud.com"))
+        // user-added protection
+        s.config.protectedDomains.insert("mybank.com")
+        XCTAssertEqual(s.add("login.mybank.com"), .protectedDomain("login.mybank.com"))
+    }
+
+    func testDisableRequiresPassphraseAndEnableRestores() throws {
+        var s = makeState()
+        _ = s.add("a.com")
+        XCTAssertFalse(s.disable(passphrase: "x"))     // no passphrase set
+        s.config.passphrase = try Passphrase.make("secret")
+        XCTAssertFalse(s.disable(passphrase: "wrong"))
+        XCTAssertTrue(s.enabled)
+        XCTAssertTrue(s.disable(passphrase: "secret"))
+        XCTAssertFalse(s.enabled)
+        XCTAssertTrue(s.blocked.contains("a.com"))     // blocklist retained
+        s.enable()
+        XCTAssertTrue(s.enabled)
     }
 
     func testRemoveQueuesWithCooldownAndStaysBlocked() {

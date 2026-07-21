@@ -26,6 +26,11 @@ func promptSecret(_ prompt: String) -> String {
     return String(cString: c)
 }
 
+func promptLine(_ prompt: String) -> String {
+    FileHandle.standardOutput.write(Data(prompt.utf8))
+    return readLine() ?? ""
+}
+
 func loadState() -> BulwarkState {
     do { return try store.load() } catch { fail("could not read state: \(error)") }
 }
@@ -53,7 +58,10 @@ func humanDuration(_ seconds: TimeInterval) -> String {
 
 func cmdStatus() {
     let s = loadState()
-    print("Bulwark — \(s.blocked.count) site(s) blocked, cooldown \(humanDuration(s.config.cooldownSeconds)), partner passphrase \(s.config.passphrase == nil ? "NOT set" : "set").")
+    if !s.enabled {
+        print("Bulwark — ⏸ DISABLED (kill switch). \(s.blocked.count) site(s) saved but not enforced. `sudo bulwark enable` to resume.")
+    }
+    print("Bulwark — \(s.blocked.count) site(s) blocked, cooldown \(humanDuration(s.config.cooldownSeconds)), partner passphrase \(s.config.passphrase == nil ? "NOT set" : "set"), \(s.config.protectedDomains.count) custom-protected.")
     if s.blocked.isEmpty {
         print("  (nothing blocked yet — `sudo bulwark add <site>`)")
     } else {
@@ -76,10 +84,111 @@ func cmdAdd(_ sites: [String]) {
     var s = loadState()
     var added: [String] = []
     for site in sites {
-        if let d = s.add(site) { added.append(d) } else { print("skipped invalid: \(site)") }
+        switch s.add(site) {
+        case .added(let d):           added.append(d)
+        case .alreadyBlocked(let d):  print("already blocked: \(d)")
+        case .invalid(let raw):       print("skipped invalid: \(raw)")
+        case .protectedDomain(let d): print("refused — \(d) is protected and can never be blocked (safety allowlist)")
+        }
     }
+    guard !added.isEmpty else { print("nothing added."); return }
     persistAndEnforce(s)
+    Audit.record("add: \(added.joined(separator: ", "))")
     print("blocked (effective immediately): \(added.joined(separator: ", "))")
+}
+
+func cmdProtect(_ sites: [String]) {
+    requireRoot()
+    guard !sites.isEmpty else { fail("usage: sudo bulwark protect <domain>...") }
+    var s = loadState()
+    var prot: [String] = []
+    for site in sites {
+        guard let d = Domain.canonical(site) else { print("skipped invalid: \(site)"); continue }
+        s.config.protectedDomains.insert(d)
+        prot.append(d)
+    }
+    guard !prot.isEmpty else { return }
+    persistAndEnforce(s)
+    Audit.record("protect: \(prot.joined(separator: ", "))")
+    print("protected — can never be blocked: \(prot.joined(separator: ", "))")
+    print("(protecting does not unblock anything already blocked)")
+}
+
+func cmdUnprotect(_ sites: [String]) {
+    requireRoot()
+    guard let site = sites.first, let d = Domain.canonical(site) else {
+        fail("usage: sudo bulwark unprotect <domain>")
+    }
+    if Allowlist.critical.contains(d) {
+        fail("\(d) is a built-in critical protection and cannot be unprotected.")
+    }
+    var s = loadState()
+    guard s.config.protectedDomains.remove(d) != nil else { fail("\(d) was not in your protected list.") }
+    persistAndEnforce(s)
+    Audit.record("unprotect: \(d)")
+    print("removed protection for \(d).")
+}
+
+func cmdDisable() {
+    requireRoot()
+    var s = loadState()
+    guard s.config.passphrase != nil else {
+        fail("clean disable needs a partner passphrase. For a genuine emergency use `sudo bulwark panic`.")
+    }
+    let pass = promptSecret("Partner passphrase to disable Bulwark: ")
+    guard s.disable(passphrase: pass) else { fail("passphrase incorrect — still enabled.") }
+    persistAndEnforce(s)
+    Audit.record("disable (clean, passphrase)")
+    print("Bulwark disabled. Blocklist kept. Re-enable with: sudo bulwark enable")
+}
+
+func cmdEnable() {
+    requireRoot()
+    var s = loadState()
+    s.enable()
+    persistAndEnforce(s)
+    Audit.record("enable")
+    print("Bulwark re-enabled — \(s.blocked.count) site(s) enforced.")
+}
+
+func cmdPanic(_ argv: [String]) {
+    requireRoot()
+    let preconfirmed = argv.contains("--confirm") || argv.contains("--yes")
+    if preconfirmed {
+        let s = (try? store.load()) ?? BulwarkState()
+        Audit.record("PANIC scorched-earth (--confirm) — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")")
+        try? Enforcer.clearAll()
+        Shell.run("/bin/launchctl", ["bootout", "system", Paths.daemonPlist])
+        Enforcer.setImmutable(false, path: Paths.stateFile)
+        Enforcer.setImmutable(false, path: Paths.clockFloorFile)
+        try? FileManager.default.removeItem(atPath: Paths.stateFile)
+        try? FileManager.default.removeItem(atPath: Paths.clockFloorFile)
+        print("Bulwark fully disabled and wiped.")
+        return
+    }
+    print("""
+    ⚠️  PANIC — break-glass emergency kill switch.
+
+    This COMPLETELY DISABLES Bulwark and WIPES your setup: blocklist, cooldown,
+    and the partner passphrase are all destroyed. It is recorded permanently in
+    the append-only audit log (\(Audit.path)).
+
+    It exists so a malfunction can never trap you — not as a way around a craving.
+    Using it means rebuilding your whole setup (and telling your partner).
+    """)
+    guard promptLine("\nType  DESTROY BULWARK  to proceed: ") == "DESTROY BULWARK" else {
+        fail("aborted — nothing changed.")
+    }
+    let s = (try? store.load()) ?? BulwarkState()
+    Audit.record("PANIC scorched-earth — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")")
+    try? Enforcer.clearAll()
+    Shell.run("/bin/launchctl", ["bootout", "system", Paths.daemonPlist])
+    Enforcer.setImmutable(false, path: Paths.stateFile)
+    Enforcer.setImmutable(false, path: Paths.clockFloorFile)
+    try? FileManager.default.removeItem(atPath: Paths.stateFile)
+    try? FileManager.default.removeItem(atPath: Paths.clockFloorFile)
+    print("\nBulwark is fully disabled and its config wiped. Your Mac is unrestricted.")
+    print("To start over later: sudo ./install/install.sh")
 }
 
 func cmdRemove(_ argv: [String]) {
@@ -96,6 +205,7 @@ func cmdRemove(_ argv: [String]) {
         let pass = promptSecret("Partner passphrase: ")
         if s.removeWithPassphrase(site, passphrase: pass) {
             persistAndEnforce(s)
+            Audit.record("remove --now (passphrase): \(site)")
             print("removed immediately: \(site)")
         } else {
             fail("passphrase incorrect — nothing changed.")
@@ -107,6 +217,7 @@ func cmdRemove(_ argv: [String]) {
         fail("\(site) is not currently blocked (or already queued).")
     }
     persistAndEnforce(s)
+    Audit.record("remove queued: \(req.domain) → \(fmt(req.unlockAt))")
     print("removal queued. \(req.domain) stays blocked until \(fmt(req.unlockAt)).")
     print("changed your mind? re-committing keeps you safe: `sudo bulwark add \(req.domain)`")
 }
@@ -137,6 +248,7 @@ func cmdSetPassphrase() {
     guard new == confirm else { fail("passphrases do not match.") }
     do { s.config.passphrase = try Passphrase.make(new) } catch { fail("\(error)") }
     persistAndEnforce(s)
+    Audit.record("partner passphrase set/changed")
     print("partner passphrase set. Have your accountability partner set this so you never learn it.")
 }
 
@@ -155,8 +267,10 @@ func cmdSetCooldown(_ argv: [String]) {
         let pass = promptSecret("Partner passphrase (required to shorten cooldown): ")
         guard Passphrase.verify(pass, against: pp) else { fail("passphrase incorrect.") }
     }
+    let old = s.config.cooldownSeconds
     s.config.cooldownSeconds = new
     persistAndEnforce(s)
+    Audit.record("cooldown \(humanDuration(old)) → \(humanDuration(new))")
     print("cooldown set to \(humanDuration(new)).")
 }
 
@@ -180,6 +294,15 @@ func usage() {
       sudo bulwark remove <site> --now   remove now (needs partner passphrase)
       sudo bulwark cancel <site>     cancel a pending removal (re-commit)
 
+    Safety allowlist (need sudo)
+      sudo bulwark protect <domain>...  never allow this domain to be blocked
+      sudo bulwark unprotect <domain>   remove a custom protection
+
+    Kill switch (need sudo)
+      sudo bulwark disable           clean shutdown (needs partner passphrase)
+      sudo bulwark enable            resume enforcement
+      sudo bulwark panic             BREAK-GLASS: wipe everything, always works
+
     Setup (need sudo)
       sudo bulwark set-passphrase    set/change the partner passphrase
       sudo bulwark set-cooldown <h>  increase freely; shortening needs passphrase
@@ -196,6 +319,11 @@ case "remove", "rm":     cmdRemove(Array(args.dropFirst()))
 case "cancel":           cmdCancel(Array(args.dropFirst()))
 case "set-passphrase":   cmdSetPassphrase()
 case "set-cooldown":     cmdSetCooldown(Array(args.dropFirst()))
+case "protect":          cmdProtect(Array(args.dropFirst()))
+case "unprotect":        cmdUnprotect(Array(args.dropFirst()))
+case "disable":          cmdDisable()
+case "enable":           cmdEnable()
+case "panic":            cmdPanic(Array(args.dropFirst()))
 case "enforce":          cmdEnforce()
 case "help", "-h", "--help": usage()
 default:
