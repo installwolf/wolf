@@ -1,6 +1,6 @@
 import Foundation
 
-public enum BulwarkError: Error, Equatable {
+public enum WolfError: Error, Equatable {
     case crypto(String)
     case invalidDomain(String)
     case io(String)
@@ -29,7 +29,7 @@ public struct RemovalRequest: Codable, Equatable {
     public var unlockAt: Date
 }
 
-public struct BulwarkConfig: Codable, Equatable {
+public struct WolfConfig: Codable, Equatable {
     /// Default cooldown before a queued removal takes effect. 48h.
     public var cooldownSeconds: TimeInterval
     /// Optional accountability-partner passphrase for instant override.
@@ -56,16 +56,16 @@ public struct BulwarkConfig: Codable, Equatable {
 
 /// The single source of truth. Persisted as JSON, owned by root, made
 /// immutable on disk. All mutation policy (add=instant, remove=gated) lives here.
-public struct BulwarkState: Codable, Equatable {
+public struct WolfState: Codable, Equatable {
     public var blocked: Set<String>
     public var pendingRemovals: [RemovalRequest]
-    public var config: BulwarkConfig
+    public var config: WolfConfig
     /// When false, the daemon clears all enforcement. Flipped by disable/enable.
     public var enabled: Bool
 
     public init(blocked: Set<String> = [],
                 pendingRemovals: [RemovalRequest] = [],
-                config: BulwarkConfig = BulwarkConfig(),
+                config: WolfConfig = WolfConfig(),
                 enabled: Bool = true) {
         self.blocked = blocked
         self.pendingRemovals = pendingRemovals
@@ -78,7 +78,7 @@ public struct BulwarkState: Codable, Equatable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         blocked = try c.decode(Set<String>.self, forKey: .blocked)
         pendingRemovals = try c.decode([RemovalRequest].self, forKey: .pendingRemovals)
-        config = try c.decode(BulwarkConfig.self, forKey: .config)
+        config = try c.decode(WolfConfig.self, forKey: .config)
         enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
     }
 

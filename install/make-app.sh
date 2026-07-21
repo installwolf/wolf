@@ -1,11 +1,11 @@
 #!/bin/bash
-# Bundles the BulwarkBar executable into a proper Bulwark.app menu-bar app.
+# Bundles the WolfBar executable into a proper Wolf.app menu-bar app.
 # Usage: ./install/make-app.sh [dest-dir]   (default /Applications)
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 DEST="${1:-/Applications}"
-APP="$DEST/Bulwark.app"
+APP="$DEST/Wolf.app"
 
 echo "==> Building release"
 (cd "$REPO" && swift build -c release)
@@ -13,17 +13,17 @@ echo "==> Building release"
 echo "==> Assembling $APP"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$REPO/.build/release/BulwarkBar" "$APP/Contents/MacOS/Bulwark"
+cp "$REPO/.build/release/WolfBar" "$APP/Contents/MacOS/Wolf"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key>               <string>Bulwark</string>
-    <key>CFBundleDisplayName</key>        <string>Bulwark</string>
-    <key>CFBundleIdentifier</key>         <string>com.bulwark.menubar</string>
-    <key>CFBundleExecutable</key>         <string>Bulwark</string>
+    <key>CFBundleName</key>               <string>Wolf</string>
+    <key>CFBundleDisplayName</key>        <string>Wolf</string>
+    <key>CFBundleIdentifier</key>         <string>com.wolf.menubar</string>
+    <key>CFBundleExecutable</key>         <string>Wolf</string>
     <key>CFBundleVersion</key>            <string>1.0</string>
     <key>CFBundleShortVersionString</key> <string>1.0</string>
     <key>CFBundlePackageType</key>        <string>APPL</string>

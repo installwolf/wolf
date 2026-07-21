@@ -2,33 +2,33 @@
 import PackageDescription
 
 let package = Package(
-    name: "bulwark",
+    name: "wolf",
     platforms: [.macOS(.v13)],
     targets: [
         // Pure, testable logic. No system side effects live here.
-        .target(name: "BulwarkCore"),
+        .target(name: "WolfCore"),
 
-        // The `bulwark` CLI: add/remove/status, talks to the daemon via state files.
+        // The `wolf` CLI: add/remove/status, talks to the daemon via state files.
         .executableTarget(
-            name: "bulwark",
-            dependencies: ["BulwarkCore"]
+            name: "wolf",
+            dependencies: ["WolfCore"]
         ),
 
         // The root watchdog daemon: self-heals enforcement, drains the removal queue.
         .executableTarget(
-            name: "bulwarkd",
-            dependencies: ["BulwarkCore"]
+            name: "wolfd",
+            dependencies: ["WolfCore"]
         ),
 
         // Menu-bar app: a friendly front end over the CLI (SwiftUI MenuBarExtra).
         .executableTarget(
-            name: "BulwarkBar",
-            dependencies: ["BulwarkCore"]
+            name: "WolfBar",
+            dependencies: ["WolfCore"]
         ),
 
         .testTarget(
-            name: "BulwarkCoreTests",
-            dependencies: ["BulwarkCore"]
+            name: "WolfCoreTests",
+            dependencies: ["WolfCore"]
         ),
     ]
 )

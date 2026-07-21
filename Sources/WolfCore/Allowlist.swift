@@ -1,6 +1,6 @@
 import Foundation
 
-/// Domains Bulwark refuses to block, ever. This is the anti-footgun rail: it
+/// Domains Wolf refuses to block, ever. This is the anti-footgun rail: it
 /// stops you from accidentally sinkholing Apple/OS services (or your own
 /// bank/work) and locking yourself out of a working Mac.
 ///

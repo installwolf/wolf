@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.bulwark.daemon</string>
+    <string>com.wolf.daemon</string>
 
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/sbin/bulwarkd</string>
+        <string>/usr/local/sbin/wolfd</string>
     </array>
 
     <!-- Start at boot and relaunch if killed: the watchdog must be hard to stop. -->
@@ -17,9 +17,9 @@
     <true/>
 
     <key>StandardOutPath</key>
-    <string>/var/log/bulwark.log</string>
+    <string>/var/log/wolf.log</string>
     <key>StandardErrorPath</key>
-    <string>/var/log/bulwark.log</string>
+    <string>/var/log/wolf.log</string>
 
     <key>ProcessType</key>
     <string>Background</string>

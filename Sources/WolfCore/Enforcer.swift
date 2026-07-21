@@ -1,6 +1,6 @@
 import Foundation
 
-/// Applies `BulwarkState` to the live system and self-heals it. This is the
+/// Applies `WolfState` to the live system and self-heals it. This is the
 /// layer that has real side effects; it must run as root.
 ///
 /// Layers (see DESIGN.md): /etc/hosts sinkhole + pf anchor blocking DoH/DoT +
@@ -10,7 +10,7 @@ public enum Enforcer {
 
     /// Render state onto every enforcement layer and re-harden. When the state
     /// is disabled (kill switch), clear every layer instead.
-    public static func apply(_ state: BulwarkState) throws {
+    public static func apply(_ state: WolfState) throws {
         guard state.enabled else { try clearAll(); return }
         let domains = state.blocked.sorted()
         try writeHosts(domains)
@@ -24,9 +24,9 @@ public enum Enforcer {
     public static func clearAll() throws {
         unhardenAll()
         try writeHosts([])
-        Shell.run("/sbin/pfctl", ["-a", "bulwark", "-F", "all"])
+        Shell.run("/sbin/pfctl", ["-a", "wolf", "-F", "all"])
         setImmutable(false, path: Paths.pfAnchor)
-        try? "# managed by bulwark (disabled)\n".write(toFile: Paths.pfAnchor, atomically: true, encoding: .utf8)
+        try? "# managed by wolf (disabled)\n".write(toFile: Paths.pfAnchor, atomically: true, encoding: .utf8)
         flushDNSCache()
     }
 
@@ -41,7 +41,7 @@ public enum Enforcer {
         do {
             try updated.write(toFile: path, atomically: true, encoding: .utf8)
         } catch {
-            throw BulwarkError.io("cannot write \(path) (need root?): \(error.localizedDescription)")
+            throw WolfError.io("cannot write \(path) (need root?): \(error.localizedDescription)")
         }
         setImmutable(true, path: path)
         flushDNSCache()
@@ -60,15 +60,15 @@ public enum Enforcer {
         do {
             try rules.write(toFile: path, atomically: true, encoding: .utf8)
         } catch {
-            throw BulwarkError.io("cannot write \(path): \(error.localizedDescription)")
+            throw WolfError.io("cannot write \(path): \(error.localizedDescription)")
         }
         setImmutable(true, path: path)
     }
 
-    /// (Re)load the Bulwark pf anchor. Assumes pf.conf references it (installer adds that).
+    /// (Re)load the Wolf pf anchor. Assumes pf.conf references it (installer adds that).
     static func reloadPf() {
         Shell.run("/sbin/pfctl", ["-E"])                       // enable pf (ref-counted)
-        Shell.run("/sbin/pfctl", ["-a", "bulwark", "-f", Paths.pfAnchor])
+        Shell.run("/sbin/pfctl", ["-a", "wolf", "-f", Paths.pfAnchor])
     }
 
     static func flushDNSCache() {

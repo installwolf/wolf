@@ -1,5 +1,5 @@
 import XCTest
-@testable import BulwarkCore
+@testable import WolfCore
 
 final class DomainTests: XCTestCase {
     func testCanonicalizesCommonForms() {
@@ -74,9 +74,9 @@ final class PassphraseTests: XCTestCase {
 final class StateTests: XCTestCase {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
 
-    func makeState(cooldown: TimeInterval = 48 * 3600) -> BulwarkState {
-        BulwarkState(blocked: [], pendingRemovals: [],
-                     config: BulwarkConfig(cooldownSeconds: cooldown, passphrase: nil))
+    func makeState(cooldown: TimeInterval = 48 * 3600) -> WolfState {
+        WolfState(blocked: [], pendingRemovals: [],
+                     config: WolfConfig(cooldownSeconds: cooldown, passphrase: nil))
     }
 
     func testAddIsInstantAndCanonicalizes() {
@@ -163,7 +163,7 @@ final class StateTests: XCTestCase {
         _ = s.add("a.com")
         _ = s.requestRemoval("a.com", now: t0)
         let data = try JSONEncoder().encode(s)
-        let back = try JSONDecoder().decode(BulwarkState.self, from: data)
+        let back = try JSONDecoder().decode(WolfState.self, from: data)
         XCTAssertEqual(s, back)
     }
 }

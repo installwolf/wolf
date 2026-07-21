@@ -1,9 +1,9 @@
 import SwiftUI
 import AppKit
-import BulwarkCore
+import WolfCore
 
 @main
-struct BulwarkBarApp: App {
+struct WolfBarApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var model = StatusModel()
 
@@ -62,7 +62,7 @@ struct MenuView: View {
             Image(systemName: model.state.enabled ? "shield.fill" : "shield.slash")
                 .foregroundStyle(model.state.enabled ? .green : .orange)
             VStack(alignment: .leading, spacing: 1) {
-                Text("Bulwark").font(.headline)
+                Text("Wolf").font(.headline)
                 Text("\(model.state.blocked.count) blocked · cooldown \(hours(model.state.config.cooldownSeconds)) · passphrase \(model.state.config.passphrase == nil ? "not set" : "set")")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -121,7 +121,7 @@ struct MenuView: View {
             Button("Panic", role: .destructive) { confirmingPanic = true }
                 .buttonStyle(.borderless).foregroundStyle(.red)
                 .confirmationDialog(
-                    "Panic will disable Bulwark and WIPE your entire setup (blocklist, cooldown, passphrase). It's permanently logged. Use only for a real emergency.",
+                    "Panic will disable Wolf and WIPE your entire setup (blocklist, cooldown, passphrase). It's permanently logged. Use only for a real emergency.",
                     isPresented: $confirmingPanic, titleVisibility: .visible
                 ) {
                     Button("Wipe everything", role: .destructive) { model.panic() }

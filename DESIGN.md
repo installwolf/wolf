@@ -1,14 +1,14 @@
-# Bulwark — Design & Threat Model
+# Wolf — Design & Threat Model
 
 ## Philosophy
 
-Bulwark is a **commitment device**, not a fortress. The research consensus from
+Wolf is a **commitment device**, not a fortress. The research consensus from
 recovery communities and the vendors in this space (Cold Turkey, SelfControl,
 Covenant Eyes, Tech Lockdown) is blunt: *pure local blocking on a self-owned
 machine is necessary but never sufficient.* A sufficiently motivated admin will
 eventually get around any single device's blocker.
 
-So Bulwark optimizes for the thing that actually works: **making bypass slow,
+So Wolf optimizes for the thing that actually works: **making bypass slow,
 effortful, and visible**, so the impulse passes before you can defeat it. Two
 levers do the heavy lifting:
 
@@ -21,10 +21,10 @@ levers do the heavy lifting:
 ## Architecture
 
 ```
- bulwark (CLI)  ──writes──▶  state.json  ◀──reads──  bulwarkd (root watchdog)
+ wolf (CLI)  ──writes──▶  state.json  ◀──reads──  wolfd (root watchdog)
    add/remove/…             (root-owned,             every 15s:
    policy enforced          immutable)                 · drainDue(now)
-   in BulwarkCore                                       · Enforcer.apply(state)
+   in WolfCore                                       · Enforcer.apply(state)
                                                         · advance clock floor
                                      │
                         Enforcer.apply renders state onto:
@@ -34,12 +34,12 @@ levers do the heavy lifting:
                         └───────────────┴────────────────┴─────────────────┘
 ```
 
-- **`BulwarkCore`** — pure, unit-tested logic: domain canonicalization, the
+- **`WolfCore`** — pure, unit-tested logic: domain canonicalization, the
   add/remove/cooldown/passphrase state machine, hosts/pf rendering, PBKDF2
   passphrase hashing. No side effects, so policy is fully testable.
-- **`bulwark`** — the control CLI. Enforces the removal gate in code before
+- **`wolf`** — the control CLI. Enforces the removal gate in code before
   persisting. Mutations need root (to write protected files).
-- **`bulwarkd`** — the root LaunchDaemon. Self-heals enforcement and drains due
+- **`wolfd`** — the root LaunchDaemon. Self-heals enforcement and drains due
   removals. `KeepAlive` makes it relaunch if killed.
 
 ### The removal gate (the whole point)
@@ -128,7 +128,7 @@ Ordered by impact, informed by how the strongest tools in the space work:
 5. **Content-aware detection** — the domain-list arms race never ends; pixel/AI
    detection (à la Canopy/Covenant Eyes) catches social feeds, image boards, and
    AI-chatbot output. Heavy; later.
-6. ~~**Menu-bar app**~~ ✅ done — SwiftUI `MenuBarExtra` front end (`BulwarkBar`
+6. ~~**Menu-bar app**~~ ✅ done — SwiftUI `MenuBarExtra` front end (`WolfBar`
    target) over the CLI; mutations go through the macOS admin-auth prompt.
 
 ## Prior art studied

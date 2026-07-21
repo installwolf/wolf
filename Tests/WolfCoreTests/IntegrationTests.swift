@@ -1,5 +1,5 @@
 import XCTest
-@testable import BulwarkCore
+@testable import WolfCore
 
 /// Exercises the real Store + Enforcer (hosts layer) against sandbox paths, and
 /// simulates a daemon drain cycle. No root and no pf/DNS spawns.
@@ -7,17 +7,17 @@ final class IntegrationTests: XCTestCase {
     var dir: String!
 
     override func setUpWithError() throws {
-        dir = NSTemporaryDirectory() + "bulwark-it-" + UUID().uuidString
+        dir = NSTemporaryDirectory() + "wolf-it-" + UUID().uuidString
         try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-        setenv("BULWARK_HOME", dir + "/home", 1)
-        setenv("BULWARK_HOSTS", dir + "/hosts", 1)
-        setenv("BULWARK_PF_ANCHOR", dir + "/pf.anchor", 1)
+        setenv("WOLF_HOME", dir + "/home", 1)
+        setenv("WOLF_HOSTS", dir + "/hosts", 1)
+        setenv("WOLF_PF_ANCHOR", dir + "/pf.anchor", 1)
         // Seed a hosts file with pre-existing user content.
         try "127.0.0.1 localhost\n".write(toFile: dir + "/hosts", atomically: true, encoding: .utf8)
     }
 
     override func tearDownWithError() throws {
-        for k in ["BULWARK_HOME", "BULWARK_HOSTS", "BULWARK_PF_ANCHOR"] { unsetenv(k) }
+        for k in ["WOLF_HOME", "WOLF_HOSTS", "WOLF_PF_ANCHOR"] { unsetenv(k) }
         try? FileManager.default.removeItem(atPath: dir)
     }
 

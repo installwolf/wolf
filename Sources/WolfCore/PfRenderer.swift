@@ -16,7 +16,7 @@ public enum PfRenderer {
 
     public static func anchorRules() -> String {
         var lines = [
-            "# Bulwark pf anchor — blocks DNS-over-HTTPS/TLS bypass. Managed; do not edit.",
+            "# Wolf pf anchor — blocks DNS-over-HTTPS/TLS bypass. Managed; do not edit.",
             "block drop out proto tcp to { \(dohResolvers.joined(separator: ", ")) } port 443",
             "block drop out proto { tcp udp } to any port 853", // DoT
         ]

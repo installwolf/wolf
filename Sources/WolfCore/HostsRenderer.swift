@@ -1,11 +1,11 @@
 import Foundation
 
-/// Renders and splices Bulwark's managed section into `/etc/hosts`.
+/// Renders and splices Wolf's managed section into `/etc/hosts`.
 /// The section is delimited by markers so we can replace it idempotently
 /// without disturbing the user's own entries.
 public enum HostsRenderer {
-    public static let beginMarker = "# >>> BULWARK MANAGED BLOCK — do not edit, changes are reverted >>>"
-    public static let endMarker = "# <<< BULWARK MANAGED BLOCK <<<"
+    public static let beginMarker = "# >>> WOLF MANAGED BLOCK — do not edit, changes are reverted >>>"
+    public static let endMarker = "# <<< WOLF MANAGED BLOCK <<<"
 
     /// The managed section (markers included) for the given domains.
     public static func managedBlock(_ domains: [String]) -> String {

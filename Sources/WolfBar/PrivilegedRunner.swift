@@ -1,10 +1,10 @@
 import Foundation
 
-/// Runs the `bulwark` CLI. Read-only status comes straight from the state file
+/// Runs the `wolf` CLI. Read-only status comes straight from the state file
 /// (no privilege needed); mutating actions are run through the macOS
 /// authorization dialog via `osascript … with administrator privileges`.
 enum PrivilegedRunner {
-    static let cli = "/usr/local/bin/bulwark"
+    static let cli = "/usr/local/bin/wolf"
 
     enum RunError: Error, LocalizedError {
         case failed(String)

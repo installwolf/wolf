@@ -1,19 +1,19 @@
 import Foundation
 import SwiftUI
-import BulwarkCore
+import WolfCore
 
-/// Observable bridge between the menu-bar UI and Bulwark. Reads state directly
+/// Observable bridge between the menu-bar UI and Wolf. Reads state directly
 /// (world-readable) and routes changes through the privileged CLI.
 @MainActor
 final class StatusModel: ObservableObject {
-    @Published var state = BulwarkState()
+    @Published var state = WolfState()
     @Published var busy = false
     @Published var lastError: String?
 
     private let store = Store()
 
     func refresh() {
-        state = (try? store.load()) ?? BulwarkState()
+        state = (try? store.load()) ?? WolfState()
     }
 
     var blockedSorted: [String] { state.blocked.sorted() }

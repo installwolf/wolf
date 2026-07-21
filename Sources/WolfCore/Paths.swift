@@ -8,15 +8,15 @@ public enum Paths {
     }
 
     /// Root-owned state directory.
-    public static var home: String { env("BULWARK_HOME", "/Library/Application Support/Bulwark") }
+    public static var home: String { env("WOLF_HOME", "/Library/Application Support/Wolf") }
     public static var stateFile: String { home + "/state.json" }
     public static var clockFloorFile: String { home + "/clock_floor" }
 
     /// System files we manage.
-    public static var hosts: String { env("BULWARK_HOSTS", "/etc/hosts") }
-    public static var pfAnchor: String { env("BULWARK_PF_ANCHOR", "/etc/pf.anchors/bulwark") }
+    public static var hosts: String { env("WOLF_HOSTS", "/etc/hosts") }
+    public static var pfAnchor: String { env("WOLF_PF_ANCHOR", "/etc/pf.anchors/wolf") }
     public static var daemonPlist: String {
-        env("BULWARK_PLIST", "/Library/LaunchDaemons/com.bulwark.daemon.plist")
+        env("WOLF_PLIST", "/Library/LaunchDaemons/com.wolf.daemon.plist")
     }
 
     /// Files that get the immutable (schg) flag once enforcement is live.

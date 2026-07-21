@@ -1,7 +1,7 @@
 import Foundation
-import BulwarkCore
+import WolfCore
 
-// bulwarkd — the root watchdog. On a loop it:
+// wolfd — the root watchdog. On a loop it:
 //   1. loads state,
 //   2. drains any removals whose cooldown has elapsed,
 //   3. re-applies every enforcement layer (self-heals tampering),
@@ -12,7 +12,7 @@ nonisolated(unsafe) let store = Store()
 let tick: TimeInterval = 15
 
 func log(_ msg: String) {
-    FileHandle.standardError.write(Data("[bulwarkd] \(msg)\n".utf8))
+    FileHandle.standardError.write(Data("[wolfd] \(msg)\n".utf8))
 }
 
 /// Monotonic clock floor: persisted "latest time we've ever seen". Using

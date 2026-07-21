@@ -14,7 +14,7 @@ public enum Passphrase {
     public static func make(_ passphrase: String, iterations: Int = 200_000) throws -> PassphraseHash {
         var salt = [UInt8](repeating: 0, count: 16)
         guard SecRandomCopyBytes(kSecRandomDefault, salt.count, &salt) == errSecSuccess else {
-            throw BulwarkError.crypto("failed to generate salt")
+            throw WolfError.crypto("failed to generate salt")
         }
         let hash = try derive(passphrase, salt: salt, iterations: iterations)
         return PassphraseHash(saltB64: Data(salt).base64EncodedString(),
@@ -45,7 +45,7 @@ public enum Passphrase {
             UInt32(iterations),
             &out, out.count
         )
-        guard status == kCCSuccess else { throw BulwarkError.crypto("PBKDF2 failed (\(status))") }
+        guard status == kCCSuccess else { throw WolfError.crypto("PBKDF2 failed (\(status))") }
         return out
     }
 }
