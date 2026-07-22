@@ -241,6 +241,78 @@ introduced*: the enforcement half is a tool; the partner half only works if the
 user is willing to be seen, and the product's job is to lower the cost of that
 willingness without pretending it's free.
 
+## The rung below graduation: private, honest progress
+
+If enrolling a partner is the graduation step, there is a **rung beneath it** for
+the user who isn't ready to be seen yet. The job of that rung is narrow and
+specific: **build the self-efficacy that makes reaching out thinkable.** The
+missing ingredient for someone who won't disclose is rarely information — it's the
+belief "I can actually hold this." That belief is built (Bandura) through *mastery
+experiences*: small, real successes made visible. This is where a carefully scoped
+gamification belongs — not as engagement bait, but as a mirror that reflects the
+user's own commitments back as evidence.
+
+The recovery communities already run on this mechanic (streak counters, day
+badges), which validates the appetite — but the naive version is actively harmful
+and must not be copied:
+
+- **No unverifiable streaks.** v1 sees no browsing (design principle #5), so Wolf
+  knows only that it is *running*, not that the user is *abstaining*. A
+  "days clean" counter would measure daemon uptime, giving **false** confidence —
+  worse than none. Never count what Wolf cannot honestly observe.
+- **No relapse cliff.** When a number *is* the achievement, breaking it triggers
+  shame → binge → abandonment — the exact spiral the disclosure step exists to
+  dissolve. Relapse must render as a logged data point ("re-enabled after 4 days —
+  here's what held last time"), never a reset-to-zero punishment.
+- **No extrinsic reward loop.** The goal is to internalize "I don't want this,"
+  not "I want the badge" (overjustification). Progress is framed as evidence, not
+  prizes.
+
+### What it counts — the audit set, reused
+
+The honest signal already exists. Every gate event funnels through
+`Audit.record` (see [Choke point](#choke-point)) — and that append-only set is
+precisely a log of **commitments the user chose to make**, all observable without
+any browsing data:
+
+- `cooldown_raised` — made it harder on themselves
+- `add` — blocked another site (a positive signal, already flagged as such in
+  [Events in v1](#events-in-v1))
+- sustained `enabled` duration
+- a `remove_queued` followed by `cancel` — an urge resisted in the open
+
+A **local, solo** progress surface reads this same set. No new instrumentation, no
+new sensitive data, and — critically — no accounts, no leaderboards, no cloud.
+Comparison-based mechanics would require identity and betray the free/local/private
+wedge; this rung is *for the user, about the user*, which is also exactly what
+self-efficacy work requires.
+
+### Designed to make itself obsolete
+
+The rung is a ramp to the partner step, not a substitute for it. Its win condition
+is **reaching out**, so the game is built to end:
+
+1. Private reflection on urges resisted — seen by no one (self-honesty).
+2. A sealed "letter to a future partner": name who you'd tell; don't send it yet.
+3. Milestone-triggered nudges — *"You've held this two weeks solo. Ready to tell
+   one person?"* — that surface `wolf pair` at the moment readiness is highest.
+
+This inverts the streak trap: readiness-to-disclose is the goal, relapse is just a
+point on the way, and the terminal reward is enrollment — which is where the RFC
+above takes over.
+
+**Tone is a hard constraint.** This is shame-adjacent territory; badges and
+confetti read as infantilizing and clash with Wolf's spare, honest, technical
+voice. The surface is "your commitments, made visible" — quiet evidence, not a
+game show. Anything louder does damage in this context.
+
+### Phasing note
+
+This rung is **local-only and reuses the Phase 1 audit/outbox plumbing** — it
+needs no relay and no partner, so it can ship inside Phase 1 (or immediately
+after) as the on-ramp that populates the funnel the partner feature graduates
+users out of. It is explicitly *not* a dependency of the relay work in Phase 2.
+
 ## Phasing
 
 - **Phase 1 (biggest win / least infra):** `PartnerChannel` in state; `wolf pair`
