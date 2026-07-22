@@ -120,6 +120,10 @@ header.scrolled { border-bottom-color: var(--night-3); }
 .terminal .o { color: var(--ash); }   /* output */
 .terminal .x { color: var(--danger); }
 .terminal .ok { color: oklch(0.8 0.13 150); }
+.terminal .cm { color: var(--ash-dim); font-style: italic; } /* comment */
+
+/* Inline code in prose — for the CLI-dev audience. */
+code { font-family: var(--font-mono); font-size: 0.9em; color: var(--ember); background: var(--night-2); padding: 0.06em 0.36em; border-radius: 4px; }
 
 /* ---------- generic sections ---------- */
 section { position: relative; }

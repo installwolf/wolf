@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wolf — the porn blocker you can't sweet-talk</title>
-  <meta name="description" content="A macOS blocker built to survive your own worst moment. Adding a site is instant. Getting past it takes a 48-hour cooldown, or a password only your accountability partner holds." />
+  <meta name="description" content="A free, open-source macOS blocker built to survive your own worst moment. A CLI commitment device: adding a site is instant; getting past it takes a 48-hour cooldown or a passphrase only your accountability partner holds. brew install everydev1618/wolf/wolf" />
   <meta property="og:title" content="Wolf — the porn blocker you can't sweet-talk" />
   <meta property="og:description" content="Easy in, hard out. A Mac blocker built for the 1 a.m. version of you." />
   <meta property="og:type" content="website" />
@@ -21,8 +21,9 @@
       <nav class="nav-links">
         <a class="txt" href="#how">How it holds</a>
         <a class="txt" href="#honesty">The honest part</a>
-        <a class="txt" href="#pricing">Pricing</a>
-        <a class="btn btn-primary" href="#pricing">Get Wolf</a>
+        <a class="txt" href="#install">Install</a>
+        <a class="txt" href="https://github.com/everydev1618/wolf">Source</a>
+        <a class="btn btn-primary" href="#install">brew&nbsp;install</a>
       </nav>
     </div>
   </header>
@@ -33,12 +34,12 @@
     <section class="hero">
       <canvas id="nocturne" aria-hidden="true"></canvas>
       <div class="wrap">
-        <p class="kicker reveal">macOS &middot; unbypassable by design</p>
+        <p class="kicker reveal">macOS &middot; CLI &middot; free &amp; open-source</p>
         <h1 class="reveal">The porn blocker you <span class="amber">can't sweet-talk.</span></h1>
-        <p class="sub reveal">Every other blocker has an off switch you'll find at 1 a.m. Wolf doesn't. Blocking a site takes one second. Getting past it takes a 48-hour cooldown, or a password only your accountability partner holds.</p>
+        <p class="sub reveal">Every other blocker has an off switch you'll find at 1 a.m. Wolf doesn't. It's a CLI-first commitment device: one command blocks a site, a 48-hour cooldown or an accountability partner's passphrase is the only way past it, and a root watchdog heals any tampering. Runs entirely on your Mac &mdash; no account, no telemetry.</p>
         <div class="cta-row reveal">
-          <a class="btn btn-primary btn-lg" href="#pricing">Get Wolf, $29/yr</a>
-          <a class="btn btn-ghost btn-lg" href="#how">See how it holds</a>
+          <a class="btn btn-primary btn-lg" href="#install">Install free</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/everydev1618/wolf">Read the source</a>
         </div>
 
         <div class="terminal reveal" role="img" aria-label="Terminal showing the wolf command blocking a site and refusing to remove it without a passphrase">
@@ -107,16 +108,15 @@
 
           <div class="row reveal">
             <div>
-              <span class="idx">03 / the deep filter</span>
-              <h3>It holds through your VPN, DoH, and Private Relay.</h3>
-              <p>An on-device content filter reads each connection's real destination before it leaves your Mac, so encrypted DNS, iCloud Private Relay, and a full-tunnel VPN can't route around it. This is the layer the cheap blockers don't have.</p>
+              <span class="idx">03 / system-level, every app</span>
+              <h3>Not a browser extension. It blocks at the OS layer.</h3>
+              <p>Enforcement lives in <code>/etc/hosts</code> and a <code>pf</code> firewall anchor, so every app is covered, not just one browser. The pf anchor also blocks the well-known DNS-over-HTTPS/TLS resolvers, so Chrome and Firefox can't quietly resolve around the hosts file. A full-tunnel VPN or Private Relay still gets around it today &mdash; we say so plainly below.</p>
             </div>
             <div class="demo">
               <ul class="chip-list">
-                <li><span class="mk">✓</span><span>Works with <b>ExpressVPN and any VPN</b> running.</span></li>
-                <li><span class="mk">✓</span><span>Immune to <b>DNS-over-HTTPS</b> in Chrome and Firefox.</span></li>
-                <li><span class="mk">✓</span><span>Immune to <b>iCloud Private Relay</b>.</span></li>
-                <li><span class="mk">✓</span><span>Covers <b>every app</b>, not just one browser.</span></li>
+                <li><span class="mk">/etc/hosts</span><span>Sinkholes blocked domains for <b>every app</b>.</span></li>
+                <li><span class="mk">pf</span><span>Blocks known <b>DoH/DoT resolvers</b> so browsers can't route around it.</span></li>
+                <li><span class="mk">roadmap</span><span>An on-device <b>Network Extension</b> to close VPN &amp; Private Relay.</span></li>
               </ul>
             </div>
           </div>
@@ -144,13 +144,14 @@
     <section class="band" id="honesty">
       <div class="wrap reveal">
         <div class="honesty">
-          <div class="eyebrow-row"><span class="kicker" style="color:var(--danger)">Read this before you buy</span></div>
+          <div class="eyebrow-row"><span class="kicker" style="color:var(--danger)">Read this before you install</span></div>
           <h2>We won't tell you it's impossible to beat.</h2>
-          <p style="color:var(--ash); margin-top:1rem; max-width:60ch;">Every tool that swears it's "100% unbypassable" is lying to you, and you already know it. On a Mac where you have the admin password, a determined person can eventually get around anything. Here's the real deal.</p>
+          <p style="color:var(--ash); margin-top:1rem; max-width:60ch;">Every tool that swears it's "100% unbypassable" is lying to you, and you already know it. On a Mac where you have the admin password, a determined person can eventually get around anything. Here's the real deal &mdash; and it's all in <a href="https://github.com/everydev1618/wolf/blob/main/DESIGN.md">the threat model</a>, not buried.</p>
           <div class="two">
             <div class="no">
-              <h4>What Wolf can't do</h4>
+              <h4>What Wolf can't do (yet)</h4>
               <ul>
+                <li>Beat a full-tunnel <b>VPN</b> or iCloud Private Relay &mdash; that needs the on-device Network Extension, which is on the roadmap.</li>
                 <li>Stop someone who wipes the Mac or boots into Recovery.</li>
                 <li>Block a different device: your phone, a work laptop.</li>
                 <li>Read your mind. It blocks sites you name, not everything.</li>
@@ -169,48 +170,30 @@
       </div>
     </section>
 
-    <!-- PRICING -->
-    <section class="band band-alt" id="pricing">
+    <!-- INSTALL -->
+    <section class="band band-alt" id="install">
       <div class="wrap">
         <div class="reveal">
-          <div class="eyebrow-row"><span class="kicker">Pricing</span></div>
-          <h2 class="section-title">One year of not fighting it alone.</h2>
-          <p class="lede">Less than a month of most subscriptions. Cancel anytime; the block keeps its word until you do.</p>
+          <div class="eyebrow-row"><span class="kicker">Install</span></div>
+          <h2 class="section-title">Free, open-source, one brew command.</h2>
+          <p class="lede">No account, no license key, no payment. Wolf installs like any other CLI, then a single privileged step arms the watchdog.</p>
         </div>
 
-        <div class="prices">
-          <div class="plan reveal">
-            <span class="tag">Lone Wolf</span>
-            <h3>For your Mac</h3>
-            <p class="who">One person, one machine, full teeth.</p>
-            <div class="price"><span class="amt">$29</span><span class="per">/ year</span></div>
-            <ul>
-              <li>Every layer: <b>watchdog, deep filter, the works</b></li>
-              <li><b>48-hour</b> removal cooldown</li>
-              <li>Accountability-partner passphrase</li>
-              <li>All updates for a year</li>
-            </ul>
-            <!-- TODO: replace with your Stripe Payment Link for the $29/yr plan -->
-            <a class="btn btn-ghost" href="https://buy.stripe.com/REPLACE_LONE_WOLF">Get Lone Wolf</a>
-            <p class="foot">One Mac &middot; billed yearly</p>
-          </div>
+        <div class="terminal reveal" role="img" aria-label="Terminal showing how to install Wolf with Homebrew and arm the watchdog">
+          <div class="bar"><i></i><i></i><i></i><span>zsh</span></div>
+          <pre><span class="cm"># 1 · install the CLI</span>
+<span class="p">$</span> <span class="c">brew install everydev1618/wolf/wolf</span>
 
-          <div class="plan feature reveal">
-            <span class="tag">The Pack &middot; best value</span>
-            <h3>For the whole den</h3>
-            <p class="who">Up to 5 Macs. Cover the family, or be someone's partner.</p>
-            <div class="price"><span class="amt">$99</span><span class="per">/ year</span></div>
-            <ul>
-              <li>Everything in Lone Wolf, <b>times five Macs</b></li>
-              <li>Be the <b>accountability partner</b> for the people you love</li>
-              <li>One passphrase holder protects the whole pack</li>
-              <li>All updates for a year</li>
-            </ul>
-            <!-- TODO: replace with your Stripe Payment Link for the $99/yr plan -->
-            <a class="btn btn-primary" href="https://buy.stripe.com/REPLACE_THE_PACK">Get The Pack</a>
-            <p class="foot">Up to 5 Macs &middot; billed yearly</p>
-          </div>
+<span class="cm"># 2 · one privileged step — installs the root watchdog, wires pf, starts blocking</span>
+<span class="p">$</span> <span class="c">sudo wolf bootstrap</span>
+
+<span class="cm"># 3 · your partner sets the passphrase (don't watch), then you commit</span>
+<span class="p">$</span> <span class="c">sudo wolf set-passphrase</span>
+<span class="p">$</span> <span class="c">wolf add pornhub.com xvideos.com</span>
+<span class="ok">blocked (effective immediately): pornhub.com, xvideos.com</span></pre>
         </div>
+
+        <p class="lede" style="margin-top:2rem">Everyday commands need no <code>sudo</code> — the root daemon enforces the gate. Requires macOS 13+ and <a href="https://brew.sh">Homebrew</a>. Read the code, the threat model, and every system change Wolf makes on <a href="https://github.com/everydev1618/wolf">GitHub</a>.</p>
       </div>
     </section>
 
@@ -225,24 +208,24 @@
             <div class="ans"><p>Eventually, if you're determined enough, yes, and we say so plainly above. The point isn't a perfect cage. It's to make bypass so slow and so visible that the craving passes before you can pull it off. That gap is where recovery happens.</p></div>
           </details>
           <details class="faq">
-            <summary>Does it really work with my VPN on?</summary>
-            <div class="ans"><p>Yes. The on-device filter reads each connection's true destination before it ever reaches the tunnel, so ExpressVPN or any other VPN, DNS-over-HTTPS, and iCloud Private Relay can't route around it. We built this layer specifically because it's how people slip past weaker blockers.</p></div>
+            <summary>Does it hold if I turn on a VPN?</summary>
+            <div class="ans"><p>Straight answer: not yet. v1 enforces through <code>/etc/hosts</code> and <code>pf</code>, which covers every app and blocks the common DNS-over-HTTPS bypass — but a full-tunnel VPN or iCloud Private Relay can still route around it. That's a documented hole in <a href="https://github.com/everydev1618/wolf/blob/main/DESIGN.md">the threat model</a>, and the fix is an on-device Network Extension content filter on the roadmap. We'd rather name the gap than sell you a fantasy.</p></div>
           </details>
           <details class="faq">
             <summary>Is my browsing tracked or sent anywhere?</summary>
-            <div class="ans"><p>No. Everything runs on your Mac. Wolf checks connections against your own blocklist locally and phones nothing home. Your accountability partner sees only the events you'd expect (a removal request, a break-glass), never your history.</p></div>
+            <div class="ans"><p>No — and you don't have to take our word for it. There's no account and no telemetry; everything runs on your Mac against your own local blocklist. It's open-source (MIT), so you can read exactly what it does. Your accountability partner sees only the events you'd expect (a removal request, a break-glass), never your history.</p></div>
           </details>
           <details class="faq">
             <summary>What if I lose the partner passphrase?</summary>
             <div class="ans"><p>You wait out the 48-hour cooldown, which removes any site without a passphrase, or you use the break-glass command. Break-glass always works so you can never be locked out of your own machine. It just wipes the setup and leaves a record, so it's a real exit, not a loophole.</p></div>
           </details>
           <details class="faq">
-            <summary>Do I need to be technical to use it?</summary>
-            <div class="ans"><p>You install it once and manage sites from a small menu-bar app or a one-line command. Setting the partner passphrase is the one step best done by the other person. If you can install a Mac app, you can run Wolf.</p></div>
+            <summary>How technical do I need to be?</summary>
+            <div class="ans"><p>It's a command-line tool: <code>brew install</code>, one <code>sudo wolf bootstrap</code>, then <code>wolf add &lt;site&gt;</code>. If you're comfortable in a terminal, you're home. A menu-bar app is coming for the days you don't feel like typing. Handing the partner passphrase to the other person is the one step best not done yourself.</p></div>
           </details>
           <details class="faq">
-            <summary>Can I get a refund?</summary>
-            <div class="ans"><p>If Wolf doesn't hold up its end within 30 days, email us and we'll refund you. We'd rather lose the sale than pretend it fit when it didn't.</p></div>
+            <summary>It's free — what's the catch?</summary>
+            <div class="ans"><p>No catch, no account. Wolf is free and open-source (MIT) because a tool you're trusting with your recovery shouldn't hide its guts behind a paywall or a login — you can read every line, including exactly what it does to your system, on <a href="https://github.com/everydev1618/wolf">GitHub</a>. If a paid layer ever shows up, it'll be an optional add-on, never a wall in front of the core.</p></div>
           </details>
         </div>
       </div>
@@ -253,10 +236,14 @@
       <div class="wrap reveal">
         <div class="eyebrow-row"><span class="kicker">Bind yourself before you need to</span></div>
         <h2>The best time to set the trap is when you're strong.</h2>
-        <p class="sub">Not at 1 a.m. Right now, while the decision is easy and the resolve is real.</p>
-        <div class="cta-row">
-          <a class="btn btn-primary btn-lg" href="#pricing">Get Wolf, $29/yr</a>
-          <a class="btn btn-ghost btn-lg" href="#how">How it holds</a>
+        <p class="sub">Not at 1 a.m. Right now, while the decision is easy and the resolve is real. One command:</p>
+        <div class="terminal reveal" style="max-width:40rem;margin:1.5rem auto 0" role="img" aria-label="Terminal showing the Wolf install command">
+          <div class="bar"><i></i><i></i><i></i><span>zsh</span></div>
+          <pre><span class="p">$</span> <span class="c">brew install everydev1618/wolf/wolf</span></pre>
+        </div>
+        <div class="cta-row" style="margin-top:1.5rem">
+          <a class="btn btn-primary btn-lg" href="#install">Install free</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/everydev1618/wolf">Read the source</a>
         </div>
       </div>
     </section>
