@@ -84,6 +84,34 @@ Being honest about limits is the brand. Four real gaps:
    is honest about this; it means Wolf is better-*designed* around the limit, not
    past it.
 
+## The confession is part of the mechanism
+
+There's a force in the accountability model that the feature comparison above
+doesn't capture, because it happens *before* any activity is ever reported: to
+enroll a partner, you have to **tell a specific, named human that you have a
+problem you can't hold alone.**
+
+Recovery orthodoxy treats that admission as the intervention, not the prelude to
+it. Compulsive use runs on secrecy; the act of saying it out loud to someone
+whose opinion you care about does therapeutic work before that partner sees a
+single event. "Removing secrecy" is listed as the accountability category's core
+good above — but the disclosure precedes the visibility, and it's the half the
+incumbents can't productize. Covenant Eyes can *show* your partner your activity;
+it can't manufacture the moment you decide to have one.
+
+This cuts both ways, and honesty is the brand:
+
+- **It's a differentiator, not a tax — for the user who's ready.** A self-held
+  passphrase you type yourself is a note to your future self. Handing the key to
+  someone you'd be ashamed to relapse in front of is a categorically different
+  commitment, and it's one SelfControl and Cold Turkey structurally cannot offer.
+- **But it's also Wolf's steepest adoption cliff.** Wolf's wedge is *free, local,
+  private, no account* — which attracts precisely the person not yet ready to tell
+  anyone. Requiring a willing, informed partner at the front door is a wall for
+  exactly the user the rest of the product is built to reach. The design
+  implication (keep the solo on-ramp; make the partner a *graduation step*) lives
+  in the [accountability RFC](docs/accountability-partner.md#disclosure-as-mechanism--and-as-adoption-cost).
+
 ## What Wolf deliberately does *not* try to be
 
 - **Not a monitoring product.** Wolf holds no activity data by design. When

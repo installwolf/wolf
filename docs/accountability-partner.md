@@ -193,6 +193,54 @@ tied to browsing, no screenshots, no plaintext events, and never the passphrase
 never the relay). This is deliberately the opposite of the incumbents and is the
 reason a privacy-conscious person would choose Wolf.
 
+## Disclosure as mechanism — and as adoption cost
+
+Before a partner ever *sees* an event, enrolling one forces the user to **admit to
+a specific, named human that they have a problem they can't hold alone.** This RFC
+is built around the *ongoing signal* (heartbeats, sealed events), but the initial
+admission is a separate — arguably larger — force, and it deserves to be a
+first-class design consideration rather than a side effect of pairing.
+
+**Why it matters.** Recovery orthodoxy (12-step Step 1; the shame/secrecy
+literature) holds that compulsive use runs on secrecy, and that saying it out loud
+to someone whose regard you'd hate to lose does therapeutic work *before* any
+monitoring begins. It's the one thing the incumbents structurally cannot
+productize — Covenant Eyes can show a partner your activity, but it can't
+manufacture the decision to have one.
+
+**The tension.** Wolf's wedge is *free, local, private, no account*, which
+attracts precisely the person **not yet ready to tell anyone**. A solo,
+self-held-passphrase Wolf is a product they'll install tonight; a `wolf pair` that
+demands a willing, informed partner is a wall for exactly that user. If we gate
+the front door on disclosure, we build the clinically-correct feature that the
+private-by-design user churns on before reaching.
+
+**Design consequences (bind these into the phasing):**
+
+1. **The partner is a graduation step, never the front door.** Phase 1 already
+   keeps `Notifier` + the sealed outbox working with `config.partner == nil` and a
+   self-set passphrase. Preserve that solo path as the on-ramp and frame partner
+   enrollment as *"when you're ready to stop doing this alone"* — the confession
+   becomes a milestone the product nudges toward over time, not a prerequisite.
+2. **Disclosure cost and surveillance cost are separate dials.** There's a
+   spectrum between "no one knows" and "a named partner sees every gate event":
+   an anonymous partner; a partner who receives *only* the dead-man's-switch
+   silence alert and not the event stream; a delayed or opt-in reveal. Lowering the
+   *disclosure* cost independently of the *monitoring* cost may unlock more people
+   than deeper Mac-side enforcement will.
+3. **Unresolved tension — don't paper over it.** The confession's power comes
+   partly from the partner being *someone whose regard you fear losing* (spouse,
+   sponsor). An anonymous relay partner removes the surveillance discomfort but may
+   also remove the therapeutic sting that makes it work. A frictionless,
+   stranger-on-the-other-end partner risks being accountability theater. This is a
+   real product question to test, not to assume away.
+
+None of this changes the non-negotiables above (the partner never holds the
+removal key; suppression stays visible). It changes *how the feature is
+introduced*: the enforcement half is a tool; the partner half only works if the
+user is willing to be seen, and the product's job is to lower the cost of that
+willingness without pretending it's free.
+
 ## Phasing
 
 - **Phase 1 (biggest win / least infra):** `PartnerChannel` in state; `wolf pair`
