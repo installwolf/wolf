@@ -12,8 +12,8 @@ lock further.
 
 - [x] **1. `PartnerChannel` data model** — added optional `partner` to
       `WolfConfig` with tolerant decoding (old `state.json` → `nil`).
-- [ ] **2. `Notifier` + sealed outbox** (`Sources/WolfCore/Notify.swift`) —
-      CryptoKit X25519 seal/open round-trip; root-owned append-only outbox. TDD.
+- [x] **2. `Notifier` + sealed outbox** (`Sources/WolfCore/Notify.swift`) —
+      CryptoKit X25519→HKDF→ChaChaPoly seal/open, append-only `outbox.jsonl`.
 - [ ] **3. Wire the choke point** — `Audit.record` also enqueues to `Notifier`
       when a partner is enrolled; fires for exactly the gate events. TDD.
 - [ ] **4. `wolf pair` (LAN/QR)** — remote, hash-only passphrase enrollment; the
