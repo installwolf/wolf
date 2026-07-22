@@ -18,9 +18,14 @@ public enum Paths {
     /// System files we manage.
     public static var hosts: String { env("WOLF_HOSTS", "/etc/hosts") }
     public static var pfAnchor: String { env("WOLF_PF_ANCHOR", "/etc/pf.anchors/wolf") }
+    public static var pfConf: String { env("WOLF_PF_CONF", "/etc/pf.conf") }
     public static var daemonPlist: String {
         env("WOLF_PLIST", "/Library/LaunchDaemons/com.wolf.daemon.plist")
     }
+    /// Root-owned home for the watchdog binary. `bootstrap` copies `wolfd` here
+    /// out of the (user-writable) Homebrew prefix, so the root daemon never runs
+    /// a binary its own adversary could overwrite.
+    public static var daemonBin: String { env("WOLF_DAEMON_BIN", "/usr/local/sbin/wolfd") }
 
     /// Files that get the immutable (schg) flag once enforcement is live.
     public static var immutableTargets: [String] { [stateFile, hosts, pfAnchor, daemonPlist] }

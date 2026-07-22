@@ -201,7 +201,7 @@ func cmdPanic(_ argv: [String]) {
     }
     teardown("")
     print("\nWolf is fully disabled and its config wiped. Your Mac is unrestricted.")
-    print("To start over later: sudo ./install/install.sh")
+    print("To start over later: sudo wolf bootstrap")
 }
 
 func cmdSetPassphrase() {
@@ -249,6 +249,69 @@ func cmdEnforce() {
     print("enforcement re-applied.")
 }
 
+/// One-time privileged setup, run once after `brew install`: copy the watchdog
+/// binary to a root-owned path, wire the pf anchor into pf.conf, install and
+/// start the LaunchDaemon. `install.sh` does the same for source installs; this
+/// is the Homebrew path (`brew install` runs unprivileged, so this is the single
+/// `sudo` step). Idempotent — safe to re-run.
+func cmdBootstrap(_ argv: [String]) {
+    requireRoot()
+
+    // 1. Locate the freshly-installed wolfd (sibling of this binary, or --wolfd).
+    func resolveWolfd() -> String? {
+        if let i = argv.firstIndex(of: "--wolfd"), i + 1 < argv.count { return argv[i + 1] }
+        guard let exe = Bundle.main.executablePath else { return nil }
+        let real = (exe as NSString).resolvingSymlinksInPath
+        let sibling = (real as NSString).deletingLastPathComponent + "/wolfd"
+        return FileManager.default.isExecutableFile(atPath: sibling) ? sibling : nil
+    }
+    guard let src = resolveWolfd() else {
+        fail("could not find the wolfd binary next to wolf — pass it with: sudo wolf bootstrap --wolfd <path>")
+    }
+
+    print("==> Installing watchdog to a root-owned path")
+    Enforcer.setImmutable(false, path: Paths.daemonBin)                 // in case of re-run
+    Shell.run("/bin/launchctl", ["bootout", "system", Paths.daemonPlist]) // stop it holding the old binary
+    try? FileManager.default.createDirectory(
+        atPath: (Paths.daemonBin as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+    let cp = Shell.run("/usr/bin/install", ["-m", "755", src, Paths.daemonBin])
+    guard cp.status == 0 else { fail("copying wolfd failed: \(cp.err)") }
+
+    print("==> Creating state directory")
+    try? FileManager.default.createDirectory(atPath: Paths.home, withIntermediateDirectories: true)
+
+    print("==> Wiring the pf anchor (so blocks survive reboot)")
+    if !FileManager.default.fileExists(atPath: Paths.pfAnchor) {
+        try? FileManager.default.createDirectory(
+            atPath: (Paths.pfAnchor as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+        try? "# managed by wolf\n".write(toFile: Paths.pfAnchor, atomically: true, encoding: .utf8)
+    }
+    let pfConf = (try? String(contentsOfFile: Paths.pfConf, encoding: .utf8)) ?? ""
+    if let wired = PfConf.wire(into: pfConf, anchorPath: Paths.pfAnchor) {
+        try? pfConf.write(toFile: Paths.pfConf + ".wolf-backup", atomically: true, encoding: .utf8)
+        do { try wired.write(toFile: Paths.pfConf, atomically: true, encoding: .utf8) }
+        catch { fail("could not write \(Paths.pfConf): \(error)") }
+    }
+
+    print("==> Installing and starting the watchdog daemon")
+    let plist = DaemonPlist.render(wolfdPath: Paths.daemonBin)
+    do { try plist.write(toFile: Paths.daemonPlist, atomically: true, encoding: .utf8) }
+    catch { fail("could not write \(Paths.daemonPlist): \(error)") }
+    Shell.run("/bin/launchctl", ["bootstrap", "system", Paths.daemonPlist])
+    Shell.run("/bin/launchctl", ["enable", "system/\(DaemonPlist.label)"])
+
+    print("""
+
+    Wolf is bootstrapped and the watchdog is running. Next:
+      1. Have your accountability partner set the passphrase (don't watch):
+           sudo wolf set-passphrase
+      2. Block sites (no sudo — the daemon handles it):
+           wolf add pornhub.com xvideos.com
+      3. Check status any time:
+           wolf status
+    """)
+}
+
 func usage() {
     print("""
     wolf — self-binding website blocker
@@ -270,6 +333,7 @@ func usage() {
       sudo wolf disable           clean shutdown (needs partner passphrase)
       sudo wolf panic             BREAK-GLASS: wipe everything, always works
       sudo wolf enforce           force re-apply enforcement now
+      sudo wolf bootstrap         one-time setup after `brew install`
     """)
 }
 
@@ -288,6 +352,7 @@ case "unprotect":        cmdUnprotect(Array(args.dropFirst()))
 case "disable":          cmdDisable()
 case "panic":            cmdPanic(Array(args.dropFirst()))
 case "enforce":          cmdEnforce()
+case "bootstrap":        cmdBootstrap(Array(args.dropFirst()))
 case "help", "-h", "--help": usage()
 default:
     FileHandle.standardError.write(Data("unknown command: \(args[0])\n\n".utf8))
