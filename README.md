@@ -123,6 +123,12 @@ export WOLF_HOME=/tmp/bw/home WOLF_HOSTS=/tmp/bw/hosts WOLF_PF_ANCHOR=/tmp/bw/pf
 .build/debug/wolf add example.com && .build/debug/wolf status
 ```
 
+## How Wolf compares
+
+For an honest look at where Wolf fits against SelfControl, Cold Turkey, Covenant
+Eyes, Canopy, and DNS filters — and where those tools are genuinely better — see
+[COMPETITIVE.md](COMPETITIVE.md).
+
 ## Roadmap
 
 See [DESIGN.md](DESIGN.md#roadmap). The big one: a **Network Extension content

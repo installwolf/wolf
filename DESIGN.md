@@ -125,9 +125,11 @@ Ordered by impact, informed by how the strongest tools in the space work:
    `com.apple.developer.networking.networkextension` entitlement (you have the
    Apple Developer account). This is how modern, App-Store-viable blockers
    enforce; hosts+pf becomes a fallback layer.
-2. **Accountability reporting** — optional channel that emails/pushes a partner
-   a summary (attempts, config changes, cooldown requests). The research is
+2. **Accountability reporting** — optional channel that pushes a partner a
+   summary (config changes, cooldown requests, kill-switch use). The research is
    unanimous that a partner *seeing activity* is the decisive long-term factor.
+   Full design: [docs/accountability-partner.md](docs/accountability-partner.md)
+   (remote enrollment, E2E outbox, dead-man's-switch heartbeat).
 3. **Signed remote clock** — close the forward-clock hole for cooldowns.
 4. **Config profile / supervised-device option** — a partner-controlled
    configuration profile can lock DNS, disable private browsing, block new-user
