@@ -231,6 +231,8 @@ footer .brand { font-size: 1.15rem; }
 footer small { font-size: 0.82rem; }
 footer a.txt { color: var(--ash); }
 footer a.txt:hover { color: var(--ember); }
+/* Footer links stay visible on mobile (unlike the header nav, which collapses). */
+@media (max-width: 680px) { footer .nav-links a.txt { display: inline; } }
 
 /* ---------- reveal ---------- */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
