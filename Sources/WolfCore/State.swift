@@ -29,6 +29,26 @@ public struct RemovalRequest: Codable, Equatable {
     public var unlockAt: Date
 }
 
+/// A remote accountability partner. Wolf seals event notifications to
+/// `publicKeyB64` (X25519) and routes them via `relayURL`/`channelId`. Enrolled
+/// remotely (see docs/accountability-partner.md) so the plaintext passphrase
+/// never touches the user's machine — only the resulting `PassphraseHash` does.
+/// The relay only ever sees ciphertext keyed by the opaque `channelId`.
+public struct PartnerChannel: Codable, Equatable {
+    public var publicKeyB64: String
+    public var channelId: String
+    public var relayURL: String
+    public var enrolledAt: Date
+
+    public init(publicKeyB64: String, channelId: String,
+                relayURL: String, enrolledAt: Date) {
+        self.publicKeyB64 = publicKeyB64
+        self.channelId = channelId
+        self.relayURL = relayURL
+        self.enrolledAt = enrolledAt
+    }
+}
+
 public struct WolfConfig: Codable, Equatable {
     /// Default cooldown before a queued removal takes effect. 48h.
     public var cooldownSeconds: TimeInterval
@@ -36,21 +56,26 @@ public struct WolfConfig: Codable, Equatable {
     public var passphrase: PassphraseHash?
     /// User-added domains that may never be blocked (bank, work, …).
     public var protectedDomains: Set<String>
+    /// Optional remote accountability partner to notify of gate events.
+    public var partner: PartnerChannel?
 
     public init(cooldownSeconds: TimeInterval = 48 * 3600,
                 passphrase: PassphraseHash? = nil,
-                protectedDomains: Set<String> = []) {
+                protectedDomains: Set<String> = [],
+                partner: PartnerChannel? = nil) {
         self.cooldownSeconds = cooldownSeconds
         self.passphrase = passphrase
         self.protectedDomains = protectedDomains
+        self.partner = partner
     }
 
-    // Tolerate older state files that predate `protectedDomains`.
+    // Tolerate older state files that predate `protectedDomains` / `partner`.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         cooldownSeconds = try c.decode(TimeInterval.self, forKey: .cooldownSeconds)
         passphrase = try c.decodeIfPresent(PassphraseHash.self, forKey: .passphrase)
         protectedDomains = try c.decodeIfPresent(Set<String>.self, forKey: .protectedDomains) ?? []
+        partner = try c.decodeIfPresent(PartnerChannel.self, forKey: .partner)
     }
 }
 

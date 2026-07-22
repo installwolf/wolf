@@ -71,6 +71,33 @@ final class PassphraseTests: XCTestCase {
     }
 }
 
+final class PartnerChannelTests: XCTestCase {
+    func testPartnerDefaultsToNilAndRoundTrips() throws {
+        var c = WolfConfig()
+        XCTAssertNil(c.partner)
+        c.partner = PartnerChannel(publicKeyB64: "cHVimtleHk=",
+                                   channelId: "chan-123",
+                                   relayURL: "https://relay.example",
+                                   enrolledAt: Date(timeIntervalSince1970: 1_000_000))
+        let data = try JSONEncoder().encode(c)
+        let back = try JSONDecoder().decode(WolfConfig.self, from: data)
+        XCTAssertEqual(c, back)
+        XCTAssertEqual(back.partner?.channelId, "chan-123")
+    }
+
+    func testOldStateWithoutPartnerDecodesToNil() throws {
+        // A state.json written before the partner field existed must still load,
+        // mirroring the existing tolerance for `protectedDomains`/`enabled`.
+        let legacy = Data("""
+        {"blocked":["a.com"],"pendingRemovals":[],"enabled":true,
+         "config":{"cooldownSeconds":172800,"protectedDomains":[]}}
+        """.utf8)
+        let s = try JSONDecoder().decode(WolfState.self, from: legacy)
+        XCTAssertNil(s.config.partner)
+        XCTAssertTrue(s.blocked.contains("a.com"))
+    }
+}
+
 final class StateTests: XCTestCase {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
 
