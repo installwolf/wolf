@@ -23,6 +23,60 @@
     revs.forEach((el, i) => { el.style.transitionDelay = `${Math.min(i % 5, 4) * 70}ms`; io.observe(el); });
   }
 
+  // ---- copy buttons on terminals ----
+  document.querySelectorAll(".terminal").forEach((term) => {
+    const bar = term.querySelector(".bar");
+    const pre = term.querySelector("pre");
+    if (!bar || !pre || term.hasAttribute("data-nocopy")) return;
+
+    // Copy only the runnable commands — strip the `$` prompt, comments, output.
+    const cmds = [...pre.querySelectorAll(".c")].map((el) => el.textContent.trim()).filter(Boolean);
+    if (!cmds.length) return;
+    const text = cmds.join("\n");
+
+    // Keep the button reachable by assistive tech: the "img" role (with its
+    // aria-label) belongs on the visual transcript, not the whole block + button.
+    if (term.getAttribute("role") === "img") {
+      const label = term.getAttribute("aria-label");
+      term.removeAttribute("role");
+      term.removeAttribute("aria-label");
+      pre.setAttribute("role", "img");
+      if (label) pre.setAttribute("aria-label", label);
+    }
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "copy";
+    btn.setAttribute("aria-label", `Copy command${cmds.length > 1 ? "s" : ""} to clipboard`);
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span>';
+    bar.appendChild(btn);
+
+    const setLabel = (s) => { const l = btn.querySelector("span"); if (l) l.textContent = s; };
+    let resetT = 0;
+    btn.addEventListener("click", async () => {
+      let ok = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          ok = true;
+        }
+      } catch (_) { /* fall through to legacy copy */ }
+      if (!ok) {
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", "");
+        ta.style.position = "fixed"; ta.style.left = "-9999px";
+        document.body.appendChild(ta); ta.select();
+        try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+        document.body.removeChild(ta);
+      }
+      btn.classList.toggle("copied", ok);
+      setLabel(ok ? "Copied" : "⌘C to copy");
+      clearTimeout(resetT);
+      resetT = setTimeout(() => { btn.classList.remove("copied"); setLabel("Copy"); }, 1600);
+    });
+  });
+
   // ---- hero nocturne ----
   const canvas = document.getElementById("nocturne");
   if (!canvas) return;

@@ -114,6 +114,17 @@ header.scrolled { border-bottom-color: var(--night-3); }
 .terminal .bar { display: flex; align-items: center; gap: 0.4rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--night-3); }
 .terminal .bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--night-3); display: inline-block; }
 .terminal .bar span { margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ash-dim); }
+.terminal .bar .copy {
+  margin-left: 0.7rem; display: inline-flex; align-items: center; gap: 0.32rem;
+  font-family: var(--font-mono); font-size: 0.7rem; line-height: 1; color: var(--ash-dim);
+  background: transparent; border: 1px solid var(--night-3); border-radius: 6px;
+  padding: 0.34rem 0.5rem; cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.terminal .bar .copy:hover { color: var(--bone); border-color: var(--ash-dim); background: rgba(255,255,255,0.03); }
+.terminal .bar .copy:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.terminal .bar .copy svg { opacity: 0.85; flex: none; }
+.terminal .bar .copy.copied { color: oklch(0.8 0.13 150); border-color: oklch(0.8 0.13 150 / 0.5); }
 .terminal pre { padding: 1.1rem 1.2rem; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.85; overflow-x: auto; }
 .terminal .p { color: var(--ember); } /* prompt */
 .terminal .c { color: var(--bone); }  /* command */
