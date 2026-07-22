@@ -135,7 +135,7 @@ func cmdProtect(_ sites: [String]) {
     }
     guard !prot.isEmpty else { return }
     persistAndEnforce(s)
-    Audit.record("protect: \(prot.joined(separator: ", "))")
+    Audit.record("protect: \(prot.joined(separator: ", "))", notifying: s.config)
     print("protected — can never be blocked: \(prot.joined(separator: ", "))")
     print("(protecting does not unblock anything already blocked)")
 }
@@ -151,7 +151,7 @@ func cmdUnprotect(_ sites: [String]) {
     var s = loadState()
     guard s.config.protectedDomains.remove(d) != nil else { fail("\(d) was not in your protected list.") }
     persistAndEnforce(s)
-    Audit.record("unprotect: \(d)")
+    Audit.record("unprotect: \(d)", notifying: s.config)
     print("removed protection for \(d).")
 }
 
@@ -164,7 +164,7 @@ func cmdDisable() {
     let pass = promptSecret("Partner passphrase to disable Wolf: ")
     guard s.disable(passphrase: pass) else { fail("passphrase incorrect — still enabled.") }
     persistAndEnforce(s)
-    Audit.record("disable (clean, passphrase)")
+    Audit.record("disable (clean, passphrase)", notifying: s.config)
     print("Wolf disabled. Blocklist kept. Re-enable with: wolf enable")
 }
 
@@ -173,7 +173,7 @@ func cmdPanic(_ argv: [String]) {
     let preconfirmed = argv.contains("--confirm") || argv.contains("--yes")
     func teardown(_ tag: String) {
         let s = (try? store.load()) ?? WolfState()
-        Audit.record("PANIC scorched-earth\(tag) — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")")
+        Audit.record("PANIC scorched-earth\(tag) — wiped \(s.blocked.count) blocked site(s); passphrase was \(s.config.passphrase == nil ? "absent" : "SET")", notifying: s.config)
         try? Enforcer.clearAll()
         Shell.run("/bin/launchctl", ["bootout", "system", Paths.daemonPlist])
         Enforcer.setImmutable(false, path: Paths.stateFile)
@@ -217,7 +217,7 @@ func cmdSetPassphrase() {
     guard new == confirm else { fail("passphrases do not match.") }
     do { s.config.passphrase = try Passphrase.make(new) } catch { fail("\(error)") }
     persistAndEnforce(s)
-    Audit.record("partner passphrase set/changed")
+    Audit.record("partner passphrase set/changed", notifying: s.config)
     print("partner passphrase set. Have your accountability partner set this so you never learn it.")
 }
 
@@ -238,7 +238,7 @@ func cmdSetCooldown(_ argv: [String]) {
     let old = s.config.cooldownSeconds
     s.config.cooldownSeconds = new
     persistAndEnforce(s)
-    Audit.record("cooldown \(humanDuration(old)) → \(humanDuration(new))")
+    Audit.record("cooldown \(humanDuration(old)) → \(humanDuration(new))", notifying: s.config)
     print("cooldown set to \(humanDuration(new)).")
 }
 

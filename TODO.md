@@ -14,8 +14,8 @@ lock further.
       `WolfConfig` with tolerant decoding (old `state.json` → `nil`).
 - [x] **2. `Notifier` + sealed outbox** (`Sources/WolfCore/Notify.swift`) —
       CryptoKit X25519→HKDF→ChaChaPoly seal/open, append-only `outbox.jsonl`.
-- [ ] **3. Wire the choke point** — `Audit.record` also enqueues to `Notifier`
-      when a partner is enrolled; fires for exactly the gate events. TDD.
+- [x] **3. Wire the choke point** — `Audit.record(_:notifying:)` seals the same
+      event to the partner when enrolled; wired at every call site (daemon + CLI).
 - [ ] **4. `wolf pair` (LAN/QR)** — remote, hash-only passphrase enrollment; the
       plaintext passphrase never touches the user's Mac.
 

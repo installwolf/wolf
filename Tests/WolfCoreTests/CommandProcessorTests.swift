@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import WolfCore
 
 /// Stub resolver so command tests never touch the network. Unmapped domains
@@ -87,6 +88,40 @@ final class CommandProcessorTests: XCTestCase {
         let r = run("add", ["evil.com"],
                     resolver: StubResolver(map: ["evil.com": .notFound]))
         XCTAssertTrue(r.lines.contains { $0.contains("already blocked") })
+    }
+
+    // MARK: accountability choke point (slice 3)
+
+    func testGateEventsAreSealedToEnrolledPartner() throws {
+        let recipient = Curve25519.KeyAgreement.PrivateKey()
+        var s = try store.load()
+        s.config.partner = PartnerChannel(
+            publicKeyB64: recipient.publicKey.rawRepresentation.base64EncodedString(),
+            channelId: "c1", relayURL: "https://relay.example",
+            enrolledAt: Date(timeIntervalSince1970: 1))
+        try store.save(s)
+
+        _ = run("add", ["evil.com"])
+        _ = run("remove", ["evil.com"])
+        _ = run("cancel", ["evil.com"])
+
+        let lines = try String(contentsOfFile: Notifier.path, encoding: .utf8)
+            .split(separator: "\n").map(String.init)
+        XCTAssertEqual(lines.count, 3, "add + remove-queued + cancel")
+        let opened = try lines.map { line -> String in
+            let ev = try JSONDecoder().decode(SealedEvent.self, from: Data(line.utf8))
+            return String(decoding: try SealedBox.open(ev, withRecipientPrivateKey: recipient), as: UTF8.self)
+        }
+        XCTAssertTrue(opened[0].contains("add: evil.com"))
+        XCTAssertTrue(opened[1].contains("remove queued: evil.com"))
+        XCTAssertTrue(opened[2].contains("cancel removal: evil.com"))
+    }
+
+    func testNoOutboxWhenNoPartnerEnrolled() throws {
+        _ = run("add", ["evil.com"])
+        _ = run("remove", ["evil.com"])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: Notifier.path),
+                       "no partner → nothing to notify, no outbox")
     }
 
     func testInstantRemoveNeedsPassphrase() throws {

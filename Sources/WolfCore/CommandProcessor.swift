@@ -57,7 +57,7 @@ public enum CommandProcessor {
                 }
                 guard !added.isEmpty else { lines.append("nothing added."); return .init(ok: false, lines: lines) }
                 try store.save(state); try Enforcer.apply(state)
-                Audit.record("add: \(added.joined(separator: ", "))")
+                Audit.record("add: \(added.joined(separator: ", "))", notifying: state.config)
                 lines.append("blocked (effective immediately): \(added.joined(separator: ", "))")
                 return .init(ok: true, lines: lines)
 
@@ -72,7 +72,7 @@ public enum CommandProcessor {
                     }
                     if state.removeWithPassphrase(site, passphrase: req.passphrase ?? "") {
                         try store.save(state); try Enforcer.apply(state)
-                        Audit.record("remove --now (passphrase): \(site)")
+                        Audit.record("remove --now (passphrase): \(site)", notifying: state.config)
                         return .init(ok: true, lines: ["removed immediately: \(site)"])
                     }
                     return .init(ok: false, lines: ["passphrase incorrect — nothing changed."])
@@ -81,7 +81,7 @@ public enum CommandProcessor {
                     return .init(ok: false, lines: ["\(site) is not currently blocked (or already queued)."])
                 }
                 try store.save(state); try Enforcer.apply(state)
-                Audit.record("remove queued: \(r.domain) → \(fmt(r.unlockAt))")
+                Audit.record("remove queued: \(r.domain) → \(fmt(r.unlockAt))", notifying: state.config)
                 return .init(ok: true, lines: [
                     "removal queued. \(r.domain) stays blocked until \(fmt(r.unlockAt)).",
                     "changed your mind? re-committing keeps you safe: `wolf add \(r.domain)`"])
@@ -96,12 +96,12 @@ public enum CommandProcessor {
                     return .init(ok: false, lines: ["no pending removal for \(d)."])
                 }
                 try store.save(state); try Enforcer.apply(state)
-                Audit.record("cancel removal: \(d)")
+                Audit.record("cancel removal: \(d)", notifying: state.config)
                 return .init(ok: true, lines: ["cancelled pending removal — \(d) stays blocked."])
 
             case "enable":
                 state.enable(); try store.save(state); try Enforcer.apply(state)
-                Audit.record("enable")
+                Audit.record("enable", notifying: state.config)
                 return .init(ok: true, lines: ["Wolf re-enabled — \(state.blocked.count) site(s) enforced."])
 
             default:
