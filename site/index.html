@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wolf — the porn blocker you can't sweet-talk</title>
-  <meta name="description" content="A free, open-source macOS blocker built to survive your own worst moment. A CLI commitment device: adding a site is instant; getting past it takes a 48-hour cooldown or a passphrase only your accountability partner holds. brew install everydev1618/wolf/wolf" />
+  <meta name="description" content="A free, open-source macOS blocker built to survive your own worst moment. A CLI commitment device: adding a site is instant; getting past it takes a 48-hour cooldown or a passphrase only your accountability partner holds. brew install installwolf/tap/wolf" />
   <meta property="og:title" content="Wolf — the porn blocker you can't sweet-talk" />
   <meta property="og:description" content="Easy in, hard out. A Mac blocker built for the 1 a.m. version of you." />
   <meta property="og:type" content="website" />
@@ -22,7 +22,7 @@
         <a class="txt" href="#how">How it holds</a>
         <a class="txt" href="#honesty">The honest part</a>
         <a class="txt" href="#install">Install</a>
-        <a class="txt" href="https://github.com/everydev1618/wolf">Source</a>
+        <a class="txt" href="https://github.com/installwolf/wolf">Source</a>
         <a class="btn btn-primary" href="#install">brew&nbsp;install</a>
       </nav>
     </div>
@@ -39,7 +39,7 @@
         <p class="sub reveal">Every other blocker has an off switch you'll find at 1 a.m. Wolf doesn't. It's a CLI-first commitment device: one command blocks a site, a 48-hour cooldown or an accountability partner's passphrase is the only way past it, and a root watchdog heals any tampering. Runs entirely on your Mac &mdash; no account, no telemetry.</p>
         <div class="cta-row reveal">
           <a class="btn btn-primary btn-lg" href="#install">Install free</a>
-          <a class="btn btn-ghost btn-lg" href="https://github.com/everydev1618/wolf">Read the source</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/installwolf/wolf">Read the source</a>
         </div>
 
         <div class="terminal reveal" role="img" aria-label="Terminal showing the wolf command blocking a site and refusing to remove it without a passphrase">
@@ -146,7 +146,7 @@
         <div class="honesty">
           <div class="eyebrow-row"><span class="kicker" style="color:var(--danger)">Read this before you install</span></div>
           <h2>We won't tell you it's impossible to beat.</h2>
-          <p style="color:var(--ash); margin-top:1rem; max-width:60ch;">Every tool that swears it's "100% unbypassable" is lying to you, and you already know it. On a Mac where you have the admin password, a determined person can eventually get around anything. Here's the real deal &mdash; and it's all in <a href="https://github.com/everydev1618/wolf/blob/main/DESIGN.md">the threat model</a>, not buried.</p>
+          <p style="color:var(--ash); margin-top:1rem; max-width:60ch;">Every tool that swears it's "100% unbypassable" is lying to you, and you already know it. On a Mac where you have the admin password, a determined person can eventually get around anything. Here's the real deal &mdash; and it's all in <a href="https://github.com/installwolf/wolf/blob/main/DESIGN.md">the threat model</a>, not buried.</p>
           <div class="two">
             <div class="no">
               <h4>What Wolf can't do (yet)</h4>
@@ -182,7 +182,7 @@
         <div class="terminal reveal" role="img" aria-label="Terminal showing how to install Wolf with Homebrew and arm the watchdog">
           <div class="bar"><i></i><i></i><i></i><span>zsh</span></div>
           <pre><span class="cm"># 1 · install the CLI</span>
-<span class="p">$</span> <span class="c">brew install everydev1618/wolf/wolf</span>
+<span class="p">$</span> <span class="c">brew install installwolf/tap/wolf</span>
 
 <span class="cm"># 2 · one privileged step — installs the root watchdog, wires pf, starts blocking</span>
 <span class="p">$</span> <span class="c">sudo wolf bootstrap</span>
@@ -193,7 +193,7 @@
 <span class="ok">blocked (effective immediately): pornhub.com, xvideos.com</span></pre>
         </div>
 
-        <p class="lede" style="margin-top:2rem">Everyday commands need no <code>sudo</code> — the root daemon enforces the gate. Requires macOS 13+ and <a href="https://brew.sh">Homebrew</a>. Read the code, the threat model, and every system change Wolf makes on <a href="https://github.com/everydev1618/wolf">GitHub</a>.</p>
+        <p class="lede" style="margin-top:2rem">Everyday commands need no <code>sudo</code> — the root daemon enforces the gate. Requires macOS 13+ and <a href="https://brew.sh">Homebrew</a>. Read the code, the threat model, and every system change Wolf makes on <a href="https://github.com/installwolf/wolf">GitHub</a>.</p>
       </div>
     </section>
 
@@ -209,7 +209,7 @@
           </details>
           <details class="faq">
             <summary>Does it hold if I turn on a VPN?</summary>
-            <div class="ans"><p>Straight answer: not yet. v1 enforces through <code>/etc/hosts</code> and <code>pf</code>, which covers every app and blocks the common DNS-over-HTTPS bypass — but a full-tunnel VPN or iCloud Private Relay can still route around it. That's a documented hole in <a href="https://github.com/everydev1618/wolf/blob/main/DESIGN.md">the threat model</a>, and the fix is an on-device Network Extension content filter on the roadmap. We'd rather name the gap than sell you a fantasy.</p></div>
+            <div class="ans"><p>Straight answer: not yet. v1 enforces through <code>/etc/hosts</code> and <code>pf</code>, which covers every app and blocks the common DNS-over-HTTPS bypass — but a full-tunnel VPN or iCloud Private Relay can still route around it. That's a documented hole in <a href="https://github.com/installwolf/wolf/blob/main/DESIGN.md">the threat model</a>, and the fix is an on-device Network Extension content filter on the roadmap. We'd rather name the gap than sell you a fantasy.</p></div>
           </details>
           <details class="faq">
             <summary>Is my browsing tracked or sent anywhere?</summary>
@@ -225,7 +225,7 @@
           </details>
           <details class="faq">
             <summary>It's free — what's the catch?</summary>
-            <div class="ans"><p>No catch, no account. Wolf is free and open-source (MIT) because a tool you're trusting with your recovery shouldn't hide its guts behind a paywall or a login — you can read every line, including exactly what it does to your system, on <a href="https://github.com/everydev1618/wolf">GitHub</a>. If a paid layer ever shows up, it'll be an optional add-on, never a wall in front of the core.</p></div>
+            <div class="ans"><p>No catch, no account. Wolf is free and open-source (MIT) because a tool you're trusting with your recovery shouldn't hide its guts behind a paywall or a login — you can read every line, including exactly what it does to your system, on <a href="https://github.com/installwolf/wolf">GitHub</a>. If a paid layer ever shows up, it'll be an optional add-on, never a wall in front of the core.</p></div>
           </details>
         </div>
       </div>
@@ -239,11 +239,11 @@
         <p class="sub">Not at 1 a.m. Right now, while the decision is easy and the resolve is real. One command:</p>
         <div class="terminal reveal" style="max-width:40rem;margin:1.5rem auto 0" role="img" aria-label="Terminal showing the Wolf install command">
           <div class="bar"><i></i><i></i><i></i><span>zsh</span></div>
-          <pre><span class="p">$</span> <span class="c">brew install everydev1618/wolf/wolf</span></pre>
+          <pre><span class="p">$</span> <span class="c">brew install installwolf/tap/wolf</span></pre>
         </div>
         <div class="cta-row" style="margin-top:1.5rem">
           <a class="btn btn-primary btn-lg" href="#install">Install free</a>
-          <a class="btn btn-ghost btn-lg" href="https://github.com/everydev1618/wolf">Read the source</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/installwolf/wolf">Read the source</a>
         </div>
       </div>
     </section>

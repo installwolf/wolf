@@ -1,42 +1,39 @@
 # Publishing Wolf on Homebrew
 
-Wolf ships through a **personal tap** — a GitHub repo named `homebrew-wolf` under
-the `everydev1618` account. A tap has none of homebrew-core's restrictions, so we
-can install a real root LaunchDaemon (via `sudo wolf bootstrap`), which
-homebrew-core would reject as "too hard to uninstall" — exactly the property a
-commitment device needs. `wolf.rb` in this directory is the source of truth;
-publishing means copying it into the tap repo.
+Wolf ships through a **personal tap** — the public repo `installwolf/homebrew-tap`.
+A tap has none of homebrew-core's restrictions, so we can install a real root
+LaunchDaemon (via `sudo wolf bootstrap`), which homebrew-core would reject as
+"too hard to uninstall" — exactly the property a commitment device needs.
+`wolf.rb` in this directory is the source of truth; publishing means copying it
+into `installwolf/homebrew-tap/Formula/wolf.rb`.
 
 ## What the user runs
 
 ```bash
 # Once a release is tagged:
-brew install everydev1618/wolf/wolf
+brew install installwolf/tap/wolf
 
 # Available right now, straight from main (no release needed):
-brew install --HEAD everydev1618/wolf/wolf
+brew install --HEAD installwolf/tap/wolf
 
 # Then the single privileged setup step:
 sudo wolf bootstrap
 ```
 
-`brew install everydev1618/wolf/wolf` auto-taps `github.com/everydev1618/homebrew-wolf`;
+`brew install installwolf/tap/wolf` auto-taps `github.com/installwolf/homebrew-tap`;
 no separate `brew tap` needed.
 
-## One-time: create the tap repo
+## Keeping the tap in sync
+
+The formula lives in two places: this dir (source of truth) and the tap repo.
+After editing `packaging/homebrew/wolf.rb` here, copy it over and push:
 
 ```bash
-# Scaffolds ~/…/homebrew-wolf with a Formula/ dir and a git repo.
-brew tap-new everydev1618/wolf
-
-# Drop the formula in and push it to a NEW GitHub repo named homebrew-wolf.
-cp packaging/homebrew/wolf.rb "$(brew --repository everydev1618/wolf)/Formula/wolf.rb"
-cd "$(brew --repository everydev1618/wolf)"
-gh repo create everydev1618/homebrew-wolf --public --source=. --remote=origin
-git add Formula/wolf.rb && git commit -m "Wolf formula" && git push -u origin HEAD
+brew tap installwolf/tap                                   # clone the tap locally (once)
+cp packaging/homebrew/wolf.rb "$(brew --repository installwolf/tap)/Formula/wolf.rb"
+git -C "$(brew --repository installwolf/tap)" commit -am "Update wolf formula" && \
+git -C "$(brew --repository installwolf/tap)" push
 ```
-
-Now `brew install --HEAD everydev1618/wolf/wolf` works for anyone.
 
 ## Cutting a stable release (fills in url + sha256)
 
@@ -48,12 +45,12 @@ Each release, bump `url`/`sha256` in the tap's `Formula/wolf.rb`:
 cd ~/Code/wolf
 git tag v0.1.0 && git push origin v0.1.0
 
-# 2. Get the tarball sha256 (this is the value to paste into the formula).
-curl -sL https://github.com/everydev1618/wolf/archive/refs/tags/v0.1.0.tar.gz \
+# 2. Get the tarball sha256 (paste this into the formula's `sha256`).
+curl -sL https://github.com/installwolf/wolf/archive/refs/tags/v0.1.0.tar.gz \
   | shasum -a 256
 
-# 3. In the tap repo's Formula/wolf.rb, set `url` to the v0.1.0 tarball and
-#    `sha256` to the value above, then commit + push.
+# 3. In the tap's Formula/wolf.rb, set `url` to the v0.1.0 tarball and `sha256`
+#    to the value above, then commit + push.
 ```
 
 ## Verifying the formula before publishing

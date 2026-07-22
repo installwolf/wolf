@@ -3,12 +3,12 @@ class Wolf < Formula
   homepage "https://installwolf.com"
   license "MIT"
 
-  # Installable today without a release:  brew install --HEAD everydev1618/wolf/wolf
-  head "https://github.com/everydev1618/wolf.git", branch: "main"
+  # Installable today without a release:  brew install --HEAD installwolf/tap/wolf
+  head "https://github.com/installwolf/wolf.git", branch: "main"
 
   # Stable release: bump `url` + `sha256` on every tag. See README.md in this dir
   # for the one-command release flow that prints the sha256 to paste here.
-  url "https://github.com/everydev1618/wolf/archive/refs/tags/v0.1.0.tar.gz"
+  url "https://github.com/installwolf/wolf/archive/refs/tags/v0.1.0.tar.gz"
   sha256 "REPLACE_ON_FIRST_RELEASE"
 
   depends_on :macos
