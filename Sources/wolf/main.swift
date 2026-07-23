@@ -295,6 +295,7 @@ func cmdBootstrap(_ argv: [String]) {
 
     print("==> Installing and starting the watchdog daemon")
     let plist = DaemonPlist.render(wolfdPath: Paths.daemonBin)
+    Enforcer.setImmutable(false, path: Paths.daemonPlist)               // in case of re-run
     do { try plist.write(toFile: Paths.daemonPlist, atomically: true, encoding: .utf8) }
     catch { fail("could not write \(Paths.daemonPlist): \(error)") }
     Shell.run("/bin/launchctl", ["bootstrap", "system", Paths.daemonPlist])
