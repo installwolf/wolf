@@ -8,8 +8,8 @@ class Wolf < Formula
 
   # Stable release: bump `url` + `sha256` on every tag. See README.md in this dir
   # for the one-command release flow that prints the sha256 to paste here.
-  url "https://github.com/installwolf/wolf/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "cdb79c603f32c42bd02be2aecfabb38ddea49ee591f5f81b5741fc2cf7f4bc60"
+  url "https://github.com/installwolf/wolf/archive/refs/tags/v0.1.1.tar.gz"
+  sha256 "2f47851b15785fb1dd83ad569633c4f84e4350bf399608c620cd7a998c35fcba"
 
   depends_on :macos
   depends_on xcode: :build
