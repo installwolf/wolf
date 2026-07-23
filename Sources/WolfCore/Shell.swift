@@ -11,6 +11,14 @@ public enum Shell {
         let outPipe = Pipe(), errPipe = Pipe()
         p.standardOutput = outPipe
         p.standardError = errPipe
+        // Darwin's Pipe does not close the read ends on deinit here, so without
+        // this every call leaks two fds. The daemon runs Shell.run several times
+        // per tick, so the leak exhausts the process fd limit within minutes and
+        // then every daemon operation fails with EMFILE ("Too many open files").
+        defer {
+            try? outPipe.fileHandleForReading.close()
+            try? errPipe.fileHandleForReading.close()
+        }
         do { try p.run() } catch {
             return (-1, "", "failed to launch \(path): \(error)")
         }

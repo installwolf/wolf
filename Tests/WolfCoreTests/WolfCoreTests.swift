@@ -98,6 +98,31 @@ final class PartnerChannelTests: XCTestCase {
     }
 }
 
+final class ShellTests: XCTestCase {
+    private func openFDCount() -> Int {
+        (try? FileManager.default.contentsOfDirectory(atPath: "/dev/fd").count) ?? -1
+    }
+
+    /// Regression: `Shell.run` once leaked the two pipe read-ends per call, so
+    /// the long-running daemon exhausted its fd limit within minutes and every
+    /// operation then failed with EMFILE. Repeated runs must not grow fd usage.
+    func testRunDoesNotLeakFileDescriptors() throws {
+        // Warm up so one-time allocations don't count against the delta.
+        for _ in 0..<5 { _ = Shell.run("/bin/echo", ["warmup"]) }
+        let before = openFDCount()
+        for _ in 0..<50 { _ = Shell.run("/bin/echo", ["hi"]) }
+        let after = openFDCount()
+        XCTAssertLessThanOrEqual(after - before, 2,
+            "Shell.run leaked file descriptors: grew from \(before) to \(after) over 50 calls")
+    }
+
+    func testRunCapturesStdoutAndStatus() {
+        let r = Shell.run("/bin/echo", ["hello"])
+        XCTAssertEqual(r.status, 0)
+        XCTAssertEqual(r.out.trimmingCharacters(in: .whitespacesAndNewlines), "hello")
+    }
+}
+
 final class StateTests: XCTestCase {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
 
